@@ -474,7 +474,7 @@ cd mon-post-everyday</pre>
             SQLite se créent toutes seules au premier lancement : il n'y a aucune base de données
             à monter.</p>
           <div class="term">
-            <header><span class="ou">dans le dossier du projet</span><button class="copier">Copier</button></header>
+            <header><span class="ou">macOS ou linux · dans le dossier du projet</span><button class="copier">Copier</button></header>
 <pre>python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 cp config.exemple.json config.json
@@ -486,6 +486,28 @@ cp config.exemple.json config.json
 ./venv/bin/python -c "from werkzeug.security import generate_password_hash as h; print(h('VotreMotDePasse'))"
 
 ./venv/bin/python app.py</pre>
+          </div>
+          <div class="term">
+            <header><span class="ou">windows · powershell, dans le dossier du projet</span><button class="copier">Copier</button></header>
+<pre>python -m venv venv
+.\venv\Scripts\pip install -r requirements.txt
+copy config.exemple.json config.json
+
+<span class="c"># Le secret de session : à coller dans "secret" de config.json</span>
+.\venv\Scripts\python -c "import secrets; print(secrets.token_hex(32))"
+
+<span class="c"># Votre compte administrateur : coller le résultat dans "mdp_hash"</span>
+.\venv\Scripts\python -c "from werkzeug.security import generate_password_hash as h; print(h('VotreMotDePasse'))"
+
+.\venv\Scripts\python app.py</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Mac ou Windows : la seule différence</div>
+            <p>Sur Mac et Linux, les outils de l'environnement sont dans
+              <code>venv/bin/</code> ; sur Windows, dans <code>venv\Scripts\</code>. Partout
+              ailleurs dans ce guide, quand vous voyez <code>./venv/bin/python</code> sur votre
+              machine, lisez <code>.\venv\Scripts\python</code> si vous êtes sur Windows.
+              Sur le serveur, ce sera toujours la forme Mac/Linux.</p>
           </div>
           <p>Dans <code>config.json</code>, le premier compte suffit pour commencer :</p>
           <div class="term">
@@ -518,6 +540,13 @@ cp config.exemple.json config.json
           <div class="term">
             <header><span class="ou">dans le dossier du projet</span><button class="copier">Copier</button></header>
 <pre>claude</pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Il faut un compte Claude actif</div>
+            <p>Claude Code n'est pas gratuit : il fonctionne avec un abonnement Claude (ou une
+              clé d'API facturée à l'usage). Créez le compte sur
+              <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> avant
+              cette étape — sinon vous installerez l'outil pour rien.</p>
           </div>
           <p>Au premier lancement, il demande de vous connecter à votre compte Claude dans le
             navigateur. Ensuite, tapez <code>/init</code> : Claude lit tout le projet et écrit un
@@ -649,10 +678,29 @@ python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 ./venv/bin/pip install gunicorn
 
-<span class="c"># La configuration : la même démarche qu'en local</span>
+<span class="c"># La configuration</span>
 cp config.exemple.json config.json
-nano config.json               <span class="c"># coller secret + mdp_hash</span>
+
+<span class="c"># On refabrique ici le secret et le mot de passe : ce sont les mêmes</span>
+<span class="c"># commandes qu'en local, mais sur cette machine.</span>
+./venv/bin/python -c "import secrets; print(secrets.token_hex(32))"
+./venv/bin/python -c "from werkzeug.security import generate_password_hash as h; print(h('VotreMotDePasse'))"
+
+nano config.json               <span class="c"># y coller les deux résultats</span>
 chmod 600 config.json          <span class="c"># lisible par root seulement</span></pre>
+          </div>
+          <div class="encart">
+            <div class="t">nano, en trois touches</div>
+            <p>C'est l'éditeur de texte du serveur. On tape, puis :
+              <strong>Ctrl + O</strong> puis <strong>Entrée</strong> pour enregistrer, et
+              <strong>Ctrl + X</strong> pour sortir. Les flèches déplacent le curseur, la souris
+              ne sert à rien.</p>
+          </div>
+          <div class="encart">
+            <div class="t">Vous pouvez aussi reprendre celui de votre machine</div>
+            <p>Si vous avez déjà rempli <code>config.json</code> en local, copiez-le plutôt que de
+              tout refaire — depuis votre ordinateur :
+              <code>scp config.json root@VOTRE-IP:/opt/posteveryday/config.json</code></p>
           </div>
           <div class="encart piege">
             <div class="t">⚠ Dépôt privé</div>
@@ -737,10 +785,46 @@ systemctl reload caddy</pre>
         </div>
       </div>
 
+      <div class="etape" data-id="p3g">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 6</span>Mettre votre nom à la place des trous</h3>
+        </header>
+        <div class="corps-e">
+          <p>Le projet vous a été livré <strong>sans identité</strong> : ni société, ni adresse de
+            contact, ni domaine. Ce sont des valeurs à compléter, et elles sont visibles par vos
+            visiteurs tant que vous ne les remplacez pas.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur · voir ce qu'il reste à remplir</span><button class="copier">Copier</button></header>
+<pre>cd /opt/posteveryday
+grep -rn "VOTRE SOCIÉTÉ\|VOTRE-ADRESSE@exemple.fr\|votre-domaine.fr" \
+     conditions.html confidentialite.html _legal_base.html guide.html tuto.html</pre>
+          </div>
+          <p>Remplacez partout, d'un coup, par vos vraies informations :</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur · adapter les 3 valeurs</span><button class="copier">Copier</button></header>
+<pre>cd /opt/posteveryday
+sed -i 's/votre-domaine.fr/planning.mondomaine.fr/g; \
+        s/VOTRE-ADRESSE@exemple.fr/contact@mondomaine.fr/g; \
+        s/VOTRE SOCIÉTÉ/Ma Société SARL/g' \
+    conditions.html confidentialite.html _legal_base.html guide.html tuto.html
+
+systemctl restart posteveryday</pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Les réseaux sociaux lisent ces pages</div>
+            <p>Meta, TikTok et LinkedIn réclament une page de confidentialité et des conditions
+              <strong>à votre nom</strong> avant d'examiner une application. Des pages laissées
+              à trous font refuser le dossier — et annoncer quelqu'un d'autre comme éditeur de
+              votre service n'a aucune valeur juridique.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="etape" data-id="p3f">
         <header>
           <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-          <h3><span class="ref">03 · 6</span>Brancher les réseaux sociaux (plus tard)</h3>
+          <h3><span class="ref">03 · 7</span>Brancher les réseaux sociaux (plus tard)</h3>
         </header>
         <div class="corps-e">
           <p>L'application fonctionne entièrement sans cette étape : rédaction, agenda, carrousels,
