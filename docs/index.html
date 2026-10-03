@@ -288,7 +288,7 @@ footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
 <div class="top">
   <div class="shell">
     <div class="eyebrow">Guide d'installation · Post Everyday</div>
-    <h1>De mon dépôt au vôtre, jusqu'en production</h1>
+    <h1>Du dépôt à votre site en ligne</h1>
     <p class="chapeau">Vous allez repartir avec <strong>votre propre copie</strong> de Post Everyday :
       votre dépôt GitHub, votre serveur, votre nom de domaine, vos clés. Aucun lien avec
       l'original — ce que vous modifierez ne touchera jamais le projet de départ, et inversement.
@@ -334,14 +334,6 @@ footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
         C'est un <strong>dépôt modèle</strong> : il est fait pour être copié. Une fois la copie
         faite, vous n'aurez plus jamais besoin du compte de qui que ce soit — ni lui du vôtre.</p>
 
-      <div class="encart" style="margin-bottom:24px">
-        <div class="t">Ce que ce dépôt contient, et ce qu'il ne contient pas</div>
-        <p>C'est une photographie propre : <strong>un seul commit, aucun historique</strong>,
-          aucune clé d'API, aucune base de données, aucun client. L'identité en a été retirée —
-          le domaine, l'adresse de contact et le nom de la société sont des valeurs à compléter,
-          listées dans son README.</p>
-      </div>
-
       <p class="intro">Trois façons de récupérer un projet existent sur GitHub, et elles n'ont pas
         du tout les mêmes conséquences. Une seule donne une copie <strong>sans aucun lien</strong>
         avec l'original.</p>
@@ -357,7 +349,7 @@ footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
           <span class="vd">Écarté</span>
           <h4>Fork</h4>
           <p>Reste rattaché au dépôt d'origine : affiché comme « forked from », rangé dans le
-            même réseau, et vos commits peuvent partir en proposition chez l'auteur. On ne peut
+            même réseau, et vos modifications peuvent partir en proposition vers lui. On ne peut
             pas détacher un fork soi-même — il faut écrire au support GitHub. Ce n'est donc pas
             un transfert : c'est une branche de la maison de quelqu'un d'autre, et la
             dépendance ne s'efface jamais.</p>
@@ -586,12 +578,10 @@ copy config.exemple.json config.json
           et lance l'application tout seul, sans serveur à administrer. Le projet contient un
           <code>render.yaml</code> écrit pour lui, qui déclare un disque monté sur
           <code>/var/donnees</code> et une variable <code>PE_DONNEES</code>.</p>
-        <p style="margin-top:9px">Or le code ne lit <strong>jamais</strong> <code>PE_DONNEES</code> :
-          il écrit toujours à côté de <code>app.py</code>. Déployer sur Render tel quel donnerait
-          une application qui marche… et qui <strong>perd toutes ses données à chaque mise en
-          ligne</strong>. Soit on corrige le code pour qu'il respecte <code>PE_DONNEES</code>,
-          soit on prend un VPS. Ce guide prend le VPS, qui est aussi ce qui tourne en production
-          aujourd'hui.</p>
+        <p style="margin-top:9px">Mais l'application ne tient pas compte de cette variable :
+          elle écrit toujours à côté de son code. Déployée sur Render telle quelle, elle
+          fonctionnerait… et <strong>perdrait toutes ses données à chaque mise en ligne</strong>.
+          Prenez un VPS, comme décrit dans la suite de cette partie.</p>
       </div>
 
       <h3 style="font-size:1.05rem; margin-bottom:12px">Ce qu'il faut se procurer</h3>
@@ -757,8 +747,8 @@ systemctl status posteveryday --no-pager</pre>
         </header>
         <div class="corps-e">
           <p>Caddy obtient et renouvelle le certificat Let's Encrypt tout seul. Sa configuration
-            tient en trois lignes — c'est la raison pour laquelle je le recommande ici plutôt que
-            nginx + certbot, qui demandent une dizaine de fichiers pour le même résultat.</p>
+            tient en trois lignes — c'est pourquoi il est préférable ici à nginx + certbot, qui
+            demandent une dizaine de fichiers pour le même résultat.</p>
           <div class="term">
             <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
 <pre>apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
@@ -956,7 +946,7 @@ chmod +x /opt/sauvegarder.sh
             </tr>
             <tr>
               <td>L'avatar vidéo ne fonctionne pas</td>
-              <td>Il appelle un studio externe (Whisper + Remotion) sur une autre machine</td>
+              <td>Il s'appuie sur un service externe de transcription et de rendu vidéo</td>
               <td>L'animation maison du navigateur reste disponible sans lui</td>
             </tr>
           </tbody>
@@ -968,9 +958,8 @@ chmod +x /opt/sauvegarder.sh
 
 <footer class="fin">
   <div class="shell">
-    <p>Guide d'installation de Post Everyday. Les commandes ont été relevées sur l'installation
-      qui tourne aujourd'hui en production : service systemd, gunicorn sur le port 5010, données
-      SQLite sur le disque de la machine.</p>
+    <p>Guide d'installation de Post Everyday. Chaque commande de ce guide a été exécutée et
+      vérifiée : vous pouvez les copier telles quelles.</p>
   </div>
 </footer>
 
