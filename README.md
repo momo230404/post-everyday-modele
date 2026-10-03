@@ -9,7 +9,7 @@ Facebook) qui écrivent, découpent et publient les contenus d'un client.
 > ici ne descendra chez vous.
 >
 > 📘 **Le guide d'installation pas à pas**, du dépôt jusqu'à la mise en ligne :
-> <https://konigia.com/installation>
+> <https://momo230404.github.io/post-everyday-modele/>
 
 Le mode d'emploi destiné aux utilisateurs est **servi par l'application
 elle-même**, sans compte : `/guide` (ou `/tuto`). C'est la page à lire d'abord

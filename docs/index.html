@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Installer Post Everyday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#f6f7f9;
+  --surface:#ffffff;
+  --surface-2:#eef0f4;
+  --ink:#141922;
+  --body:#3d4654;
+  --muted:#6b7585;
+  --line:#dfe3ea;
+  --line-firm:#c7cdd8;
+  --accent:#1f6a48;
+  --accent-soft:#e7f1ec;
+  --accent-ink:#175338;
+  --signal:#a8411c;
+  --signal-soft:#fbeee8;
+  --term-bg:#151b24;
+  --term-ink:#d9dfe8;
+  --term-dim:#79859a;
+  --term-accent:#6fd3a0;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(20,25,34,.05), 0 8px 24px -16px rgba(20,25,34,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0e131a;
+    --surface:#161d26;
+    --surface-2:#1d2630;
+    --ink:#eef1f6;
+    --body:#bcc5d2;
+    --muted:#8a95a5;
+    --line:#2a3542;
+    --line-firm:#3a4756;
+    --accent:#5fc295;
+    --accent-soft:#172c24;
+    --accent-ink:#8ad9b4;
+    --signal:#e0855f;
+    --signal-soft:#2b1d17;
+    --term-bg:#0a0f15;
+    --term-ink:#d9dfe8;
+    --term-dim:#6e7a8c;
+    --term-accent:#6fd3a0;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0e131a;
+  --surface:#161d26;
+  --surface-2:#1d2630;
+  --ink:#eef1f6;
+  --body:#bcc5d2;
+  --muted:#8a95a5;
+  --line:#2a3542;
+  --line-firm:#3a4756;
+  --accent:#5fc295;
+  --accent-soft:#172c24;
+  --accent-ink:#8ad9b4;
+  --signal:#e0855f;
+  --signal-soft:#2b1d17;
+  --term-bg:#0a0f15;
+  --term-ink:#d9dfe8;
+  --term-dim:#6e7a8c;
+  --term-accent:#6fd3a0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--body);
+  font:400 16.5px/1.65 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{
+  font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
+  color:var(--ink); margin:0; text-wrap:balance; font-weight:700;
+  letter-spacing:-.015em;
+}
+p{margin:0}
+a{color:var(--accent-ink); text-decoration-thickness:1px; text-underline-offset:2px}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.88em}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 24px}
+
+/* ── En-tête ─────────────────────────────────────────────── */
+.top{
+  border-bottom:1px solid var(--line);
+  background:var(--surface);
+}
+.top .shell{padding-top:52px; padding-bottom:42px}
+.eyebrow{
+  font:500 12px/1 "IBM Plex Mono",monospace; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:18px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--line); max-width:220px}
+h1{font-size:clamp(2.1rem,5vw,3.1rem); line-height:1.04; font-weight:800; max-width:16ch}
+.chapeau{margin-top:20px; max-width:62ch; font-size:1.08rem; color:var(--body)}
+.chapeau strong{color:var(--ink); font-weight:600}
+
+.faits{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:1px; margin-top:38px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+}
+.fait{background:var(--surface); padding:16px 18px}
+.fait dt{
+  font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
+}
+.fait dd{margin:0; font-size:1.18rem; font-weight:600; color:var(--ink);
+  font-variant-numeric:tabular-nums; font-family:"Bricolage Grotesque",sans-serif}
+.fait dd small{display:block; font:400 .78rem/1.4 "IBM Plex Sans",sans-serif;
+  color:var(--muted); margin-top:3px; letter-spacing:0}
+
+/* ── Corps ───────────────────────────────────────────────── */
+.corps{display:grid; grid-template-columns:230px minmax(0,1fr); gap:56px;
+  padding:48px 0 90px; align-items:start}
+@media(max-width:960px){.corps{grid-template-columns:1fr; gap:0}}
+
+.rail{position:sticky; top:24px}
+@media(max-width:960px){.rail{position:static; margin-bottom:40px}}
+.rail h2{font-size:.72rem; font-family:"IBM Plex Mono",monospace; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
+.rail ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+.rail a{
+  display:flex; gap:11px; align-items:baseline; padding:8px 11px; border-radius:7px;
+  text-decoration:none; color:var(--body); font-size:.9rem; line-height:1.35;
+  border-left:2px solid transparent;
+}
+.rail a:hover{background:var(--surface-2); color:var(--ink)}
+.rail a.ici{background:var(--accent-soft); color:var(--accent-ink); border-left-color:var(--accent); font-weight:600}
+.rail a .n{font:500 .72rem/1.5 "IBM Plex Mono",monospace; color:var(--muted); flex:0 0 auto}
+.rail a.ici .n{color:var(--accent)}
+.avancee{margin-top:18px; padding:12px; border:1px solid var(--line);
+  border-radius:8px; background:var(--surface)}
+.avancee .lb{font:500 11px/1 "IBM Plex Mono",monospace; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between}
+.avancee .piste{height:5px; background:var(--surface-2); border-radius:99px; margin-top:9px; overflow:hidden}
+.avancee .piste i{display:block; height:100%; width:0; background:var(--accent);
+  border-radius:99px; transition:width .3s ease}
+
+article{min-width:0}
+section{scroll-margin-top:20px}
+section + section{margin-top:56px}
+.partie{
+  display:flex; align-items:baseline; gap:14px; padding-bottom:14px;
+  border-bottom:2px solid var(--ink); margin-bottom:26px;
+}
+.partie .num{
+  font:500 .78rem/1 "IBM Plex Mono",monospace; letter-spacing:.1em;
+  color:var(--accent); flex:0 0 auto; padding-top:4px;
+}
+.partie h2{font-size:clamp(1.5rem,3vw,1.95rem); line-height:1.12; flex:1}
+.intro{max-width:66ch; margin-bottom:28px}
+.intro + .intro{margin-top:14px}
+
+/* ── Étapes ──────────────────────────────────────────────── */
+.etape{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius); padding:20px 22px; margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.etape > header{display:flex; gap:13px; align-items:flex-start; margin-bottom:14px}
+.etape .coche{
+  flex:0 0 auto; width:26px; height:26px; border-radius:7px; margin-top:1px;
+  border:1.5px solid var(--line-firm); background:var(--surface-2);
+  display:grid; place-items:center; cursor:pointer; padding:0; color:transparent;
+  transition:background .15s, border-color .15s, color .15s;
+}
+.etape .coche:hover{border-color:var(--accent)}
+.etape .coche svg{width:14px; height:14px}
+.etape.faite .coche{background:var(--accent); border-color:var(--accent); color:#fff}
+.etape.faite > header h3{color:var(--muted); text-decoration:line-through;
+  text-decoration-color:var(--line-firm)}
+.etape h3{font-size:1.06rem; line-height:1.35; flex:1; font-weight:700}
+.etape h3 .ref{
+  font:500 .72rem/1 "IBM Plex Mono",monospace; color:var(--accent);
+  display:block; margin-bottom:5px; letter-spacing:.06em;
+}
+.etape .corps-e > * + *{margin-top:13px}
+.etape p{max-width:64ch}
+
+ul.liste{margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:9px}
+ul.liste li{padding-left:20px; position:relative; max-width:64ch}
+ul.liste li::before{
+  content:""; position:absolute; left:3px; top:.62em; width:6px; height:6px;
+  border-radius:50%; background:var(--line-firm);
+}
+ul.liste.verif li::before{
+  content:"✓"; background:none; width:auto; height:auto; left:0; top:0;
+  color:var(--accent); font-weight:700; font-size:.92em;
+}
+
+/* ── Terminal ────────────────────────────────────────────── */
+.term{
+  background:var(--term-bg); border-radius:9px; overflow:hidden;
+  border:1px solid rgba(255,255,255,.07);
+}
+.term header{
+  display:flex; align-items:center; gap:10px; padding:7px 10px 7px 13px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.term header .ou{
+  font:500 11px/1 "IBM Plex Mono",monospace; color:var(--term-dim);
+  letter-spacing:.07em; text-transform:uppercase; flex:1;
+}
+.term .copier{
+  border:1px solid rgba(255,255,255,.14); background:transparent; color:var(--term-dim);
+  border-radius:6px; padding:4px 10px; cursor:pointer;
+  font:500 11px/1.4 "IBM Plex Mono",monospace; flex:0 0 auto;
+}
+.term .copier:hover{color:var(--term-ink); border-color:rgba(255,255,255,.3)}
+.term .copier.ok{color:var(--term-accent); border-color:var(--term-accent)}
+.term pre{
+  margin:0; padding:14px 16px; overflow-x:auto; color:var(--term-ink);
+  font:400 13.5px/1.75 "IBM Plex Mono",ui-monospace,monospace;
+}
+.term pre .c{color:var(--term-dim)}
+.term pre .p{color:var(--term-accent)}
+
+/* ── Encarts ─────────────────────────────────────────────── */
+.encart{
+  border-radius:9px; padding:15px 17px; border:1px solid var(--line);
+  background:var(--surface-2); max-width:68ch;
+}
+.encart .t{
+  font:600 .76rem/1 "IBM Plex Mono",monospace; letter-spacing:.09em;
+  text-transform:uppercase; margin-bottom:9px; display:flex; align-items:center; gap:8px;
+}
+.encart p{font-size:.95rem}
+.encart.piege{background:var(--signal-soft); border-color:color-mix(in srgb,var(--signal) 32%,transparent)}
+.encart.piege .t{color:var(--signal)}
+.encart.bon{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 32%,transparent)}
+.encart.bon .t{color:var(--accent-ink)}
+.encart code{background:color-mix(in srgb,var(--ink) 8%,transparent); padding:1px 5px; border-radius:4px}
+
+/* ── Tableaux ────────────────────────────────────────────── */
+.tab-enveloppe{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:.93rem; min-width:460px}
+th,td{text-align:left; padding:11px 15px; border-bottom:1px solid var(--line); vertical-align:top}
+th{
+  font:500 11px/1.3 "IBM Plex Mono",monospace; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--muted); background:var(--surface-2);
+}
+tr:last-child td{border-bottom:0}
+td.prix{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600; color:var(--ink)}
+td code{background:var(--surface-2); padding:1px 5px; border-radius:4px}
+
+/* ── Comparatif ──────────────────────────────────────────── */
+.choix{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(246px,1fr))}
+.opt{border:1px solid var(--line); border-radius:var(--radius); padding:17px 18px;
+  background:var(--surface)}
+.opt.retenue{border-color:var(--accent); border-width:2px; padding:16px 17px}
+.opt .vd{
+  font:600 .7rem/1 "IBM Plex Mono",monospace; letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:10px; display:inline-block; padding:5px 9px; border-radius:5px;
+}
+.opt.retenue .vd{background:var(--accent); color:var(--surface)}
+.opt:not(.retenue) .vd{background:var(--surface-2); color:var(--muted)}
+.opt h4{font-size:1rem; margin-bottom:8px}
+.opt p{font-size:.92rem}
+
+footer.fin{border-top:1px solid var(--line); background:var(--surface)}
+footer.fin .shell{padding:34px 24px 46px}
+footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
+
+::selection{background:var(--accent); color:#fff}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="top">
+  <div class="shell">
+    <div class="eyebrow">Guide d'installation · Post Everyday</div>
+    <h1>De mon dépôt au vôtre, jusqu'en production</h1>
+    <p class="chapeau">Vous allez repartir avec <strong>votre propre copie</strong> de Post Everyday :
+      votre dépôt GitHub, votre serveur, votre nom de domaine, vos clés. Aucun lien avec
+      l'original — ce que vous modifierez ne touchera jamais le projet de départ, et inversement.
+      À la fin, vous pourrez travailler dessus avec Claude Code comme sur n'importe quel
+      projet à vous.</p>
+    <p class="chapeau" style="margin-top:14px">Tout part d'ici :
+      <a href="https://github.com/momo230404/post-everyday-modele" target="_blank" rel="noopener"><strong>github.com/momo230404/post-everyday-modele</strong></a></p>
+
+    <dl class="faits">
+      <div class="fait"><dt>Durée</dt><dd>2 h 30<small>la première fois, sans se presser</small></dd></div>
+      <div class="fait"><dt>À prévoir</dt><dd>2 achats<small>un serveur, un nom de domaine</small></dd></div>
+      <div class="fait"><dt>Hébergement</dt><dd>VPS<small>Ubuntu 24.04, disque durable</small></dd></div>
+      <div class="fait"><dt>Niveau</dt><dd>Débutant<small>tout est copier-coller</small></dd></div>
+    </dl>
+  </div>
+</div>
+
+<div class="shell corps">
+  <nav class="rail" aria-label="Sommaire">
+    <h2>Les 4 parties</h2>
+    <ol>
+      <li><a href="#p1" class="lien-rail"><span class="n">01</span><span>Le dépôt devient le vôtre</span></a></li>
+      <li><a href="#p2" class="lien-rail"><span class="n">02</span><span>Claude Code sur votre machine</span></a></li>
+      <li><a href="#p3" class="lien-rail"><span class="n">03</span><span>Le serveur et le domaine</span></a></li>
+      <li><a href="#p4" class="lien-rail"><span class="n">04</span><span>Vivre avec : mises à jour, sauvegardes</span></a></li>
+      <li><a href="#pieges" class="lien-rail"><span class="n">!!</span><span>Les pièges connus</span></a></li>
+    </ol>
+    <div class="avancee">
+      <div class="lb"><span>Avancée</span><span id="cpt">0 / 0</span></div>
+      <div class="piste"><i id="jauge"></i></div>
+    </div>
+  </nav>
+
+  <article>
+
+    <!-- ══════════ PARTIE 0 ══════════ -->
+    <section id="p1">
+      <div class="partie"><span class="num">Partie 01</span>
+        <h2>Le dépôt devient le vôtre</h2></div>
+
+      <p class="intro">Le projet vous attend ici :
+        <a href="https://github.com/momo230404/post-everyday-modele" target="_blank" rel="noopener"><strong>github.com/momo230404/post-everyday-modele</strong></a>.
+        C'est un <strong>dépôt modèle</strong> : il est fait pour être copié. Une fois la copie
+        faite, vous n'aurez plus jamais besoin du compte de qui que ce soit — ni lui du vôtre.</p>
+
+      <div class="encart" style="margin-bottom:24px">
+        <div class="t">Ce que ce dépôt contient, et ce qu'il ne contient pas</div>
+        <p>C'est une photographie propre : <strong>un seul commit, aucun historique</strong>,
+          aucune clé d'API, aucune base de données, aucun client. L'identité en a été retirée —
+          le domaine, l'adresse de contact et le nom de la société sont des valeurs à compléter,
+          listées dans son README.</p>
+      </div>
+
+      <p class="intro">Trois façons de récupérer un projet existent sur GitHub, et elles n'ont pas
+        du tout les mêmes conséquences. Une seule donne une copie <strong>sans aucun lien</strong>
+        avec l'original.</p>
+
+      <div class="choix" style="margin-bottom:26px">
+        <div class="opt retenue">
+          <span class="vd">Ce qu'on fait</span>
+          <h4>Use this template</h4>
+          <p>Crée un dépôt neuf, avec un historique vierge et aucun lien vers l'original.
+            GitHub ne l'affiche pas comme une copie. Vous êtes propriétaire de tout.</p>
+        </div>
+        <div class="opt">
+          <span class="vd">Écarté</span>
+          <h4>Fork</h4>
+          <p>Reste rattaché au dépôt d'origine : affiché comme « forked from », rangé dans le
+            même réseau, et vos commits peuvent partir en proposition chez l'auteur. On ne peut
+            pas détacher un fork soi-même — il faut écrire au support GitHub. Ce n'est donc pas
+            un transfert : c'est une branche de la maison de quelqu'un d'autre, et la
+            dépendance ne s'efface jamais.</p>
+        </div>
+        <div class="opt">
+          <span class="vd">Aussi valable</span>
+          <h4>ZIP + git init</h4>
+          <p>Quand le projet est distribué en archive plutôt que par GitHub : décompresser,
+            <code>git init</code>, pousser chez soi. Deux commandes de plus, résultat
+            rigoureusement identique.</p>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p1a">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">01 · 1</span>Créer un compte GitHub (si vous n'en avez pas)</h3>
+        </header>
+        <div class="corps-e">
+          <p>Sur <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>.
+            Gratuit. Activez tout de suite la double authentification : GitHub l'exige désormais pour
+            pousser du code, et la découvrir en plein cours fait perdre vingt minutes.</p>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p1b">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">01 · 2</span>Cliquer sur « Use this template »</h3>
+        </header>
+        <div class="corps-e">
+          <ul class="liste">
+            <li>Ouvrir <a href="https://github.com/momo230404/post-everyday-modele" target="_blank" rel="noopener">github.com/momo230404/post-everyday-modele</a>.</li>
+            <li>Bouton vert <strong>Use this template</strong> → <strong>Create a new repository</strong>.</li>
+            <li>Nom : ce que vous voulez — <code>mon-post-everyday</code> par exemple.</li>
+            <li>Visibilité : <strong>Private</strong>. Votre configuration n'y sera pas, mais vos
+              idées de contenu et vos textes clients finiront par s'y trouver.</li>
+            <li>Ne pas cocher « Include all branches ».</li>
+          </ul>
+          <div class="encart bon">
+            <div class="t">✓ Point de contrôle</div>
+            <p>Sur la page de votre nouveau dépôt, sous le titre, il ne doit y avoir
+              <strong>aucune mention « forked from »</strong>. Et dans l'onglet
+              <em>Commits</em>, un seul commit : <em>Initial commit</em>. C'est la preuve que
+              vous êtes indépendant.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════ PARTIE 2 ══════════ -->
+    <section id="p2">
+      <div class="partie"><span class="num">Partie 02</span>
+        <h2>Claude Code sur votre machine</h2></div>
+
+      <p class="intro">Il n'y a rien à « brancher » entre GitHub et Claude Code : Claude Code
+        travaille sur un <strong>dossier de votre ordinateur</strong>. GitHub sert à conserver et
+        à partager ce dossier ; le serveur sert à le faire tourner en public. Trois endroits
+        distincts, qu'on relie avec deux commandes.</p>
+
+      <div class="etape" data-id="p2a">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">02 · 1</span>Installer les outils</h3>
+        </header>
+        <div class="corps-e">
+          <p>Il faut Node.js 18 ou plus récent, git, Python 3.11 ou plus, et le client GitHub.</p>
+          <div class="term">
+            <header><span class="ou">macOS · terminal</span><button class="copier">Copier</button></header>
+<pre><span class="c"># Homebrew, s'il n'est pas déjà là</span>
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+brew install node git gh python@3.11
+npm install -g @anthropic-ai/claude-code</pre>
+          </div>
+          <div class="term">
+            <header><span class="ou">windows · powershell en administrateur</span><button class="copier">Copier</button></header>
+<pre>winget install OpenJS.NodeJS.LTS Git.Git GitHub.cli Python.Python.3.11
+npm install -g @anthropic-ai/claude-code</pre>
+          </div>
+          <ul class="liste verif">
+            <li><code>node -v</code> affiche v18 ou plus.</li>
+            <li><code>claude --version</code> répond.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p2b">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">02 · 2</span>Récupérer votre dépôt en local</h3>
+        </header>
+        <div class="corps-e">
+          <div class="term">
+            <header><span class="ou">terminal</span><button class="copier">Copier</button></header>
+<pre>gh auth login          <span class="c"># suivre les questions, choisir HTTPS</span>
+
+mkdir -p ~/Projets &amp;&amp; cd ~/Projets
+gh repo clone VOTRE-COMPTE/mon-post-everyday
+cd mon-post-everyday</pre>
+          </div>
+          <p>Ce dossier est désormais le vôtre, sur votre disque. C'est lui que Claude Code va ouvrir.</p>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p2c">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">02 · 3</span>Faire tourner l'application en local</h3>
+        </header>
+        <div class="corps-e">
+          <p>Avant de toucher au serveur, vérifiez qu'elle démarre sur votre machine. Les bases
+            SQLite se créent toutes seules au premier lancement : il n'y a aucune base de données
+            à monter.</p>
+          <div class="term">
+            <header><span class="ou">dans le dossier du projet</span><button class="copier">Copier</button></header>
+<pre>python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+cp config.exemple.json config.json
+
+<span class="c"># Le secret de session : à coller dans "secret" de config.json</span>
+./venv/bin/python -c "import secrets; print(secrets.token_hex(32))"
+
+<span class="c"># Votre compte administrateur : coller le résultat dans "mdp_hash"</span>
+./venv/bin/python -c "from werkzeug.security import generate_password_hash as h; print(h('VotreMotDePasse'))"
+
+./venv/bin/python app.py</pre>
+          </div>
+          <p>Dans <code>config.json</code>, le premier compte suffit pour commencer :</p>
+          <div class="term">
+            <header><span class="ou">config.json · extrait</span><button class="copier">Copier</button></header>
+<pre>"comptes": [
+  {
+    "identifiant": "moi",
+    "nom": "Votre prénom",
+    "role": "admin",
+    "mdp_hash": "scrypt:32768:8:1$...le résultat de la commande..."
+  }
+],
+"secret": "...les 64 caractères de l'autre commande..."</pre>
+          </div>
+          <div class="encart bon">
+            <div class="t">✓ Point de contrôle</div>
+            <p>Ouvrez <code>http://127.0.0.1:5010</code>. Vous arrivez sur la page de connexion.
+              Entrez <code>moi</code> et votre mot de passe. Le mode d'emploi du produit est sur
+              <code>/guide</code> et ne demande aucun compte.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p2d">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">02 · 4</span>Lancer Claude Code et lui faire lire le projet</h3>
+        </header>
+        <div class="corps-e">
+          <div class="term">
+            <header><span class="ou">dans le dossier du projet</span><button class="copier">Copier</button></header>
+<pre>claude</pre>
+          </div>
+          <p>Au premier lancement, il demande de vous connecter à votre compte Claude dans le
+            navigateur. Ensuite, tapez <code>/init</code> : Claude lit tout le projet et écrit un
+            fichier <code>CLAUDE.md</code> qui lui servira de mémoire à chaque session.
+            C'est ce fichier qui fait la différence entre un assistant qui redécouvre le code
+            chaque matin et un assistant qui le connaît.</p>
+          <p>Le cycle de travail, ensuite, est toujours le même :</p>
+          <ul class="liste">
+            <li>Vous décrivez ce que vous voulez, en français, sans jargon.</li>
+            <li>Claude modifie les fichiers ; vous relancez <code>./venv/bin/python app.py</code> pour voir.</li>
+            <li>Quand c'est bon : <code>git add -A &amp;&amp; git commit -m "ce que j'ai changé" &amp;&amp; git push</code>.</li>
+            <li>Puis la mise en ligne, en partie 04.</li>
+          </ul>
+          <div class="encart">
+            <div class="t">Le réflexe qui sauve</div>
+            <p>Committez souvent, même pour de petites choses. Tant que vous avez poussé sur
+              GitHub, aucune expérience ratée n'est définitive : <code>git checkout .</code> ramène
+              tout à l'état du dernier commit.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PARTIE 3 ══════════ -->
+    <section id="p3">
+      <div class="partie"><span class="num">Partie 03</span>
+        <h2>Le serveur et le nom de domaine</h2></div>
+
+      <p class="intro">Post Everyday écrit ses bases SQLite et ses médias <strong>sur le disque,
+        à côté du code</strong>. Cela décide de tout le reste : il lui faut une machine dont le
+        disque ne s'efface pas. C'est pourquoi Vercel et Netlify sont exclus — ils n'ont pas de
+        disque durable — et c'est pourquoi on prend un VPS, une petite machine à vous.</p>
+
+      <div class="encart piege" style="margin-bottom:24px">
+        <div class="t">⚠ Le fichier render.yaml est trompeur</div>
+        <p><strong>Render</strong> est un hébergeur où l'on relie son dépôt GitHub : il construit
+          et lance l'application tout seul, sans serveur à administrer. Le projet contient un
+          <code>render.yaml</code> écrit pour lui, qui déclare un disque monté sur
+          <code>/var/donnees</code> et une variable <code>PE_DONNEES</code>.</p>
+        <p style="margin-top:9px">Or le code ne lit <strong>jamais</strong> <code>PE_DONNEES</code> :
+          il écrit toujours à côté de <code>app.py</code>. Déployer sur Render tel quel donnerait
+          une application qui marche… et qui <strong>perd toutes ses données à chaque mise en
+          ligne</strong>. Soit on corrige le code pour qu'il respecte <code>PE_DONNEES</code>,
+          soit on prend un VPS. Ce guide prend le VPS, qui est aussi ce qui tourne en production
+          aujourd'hui.</p>
+      </div>
+
+      <h3 style="font-size:1.05rem; margin-bottom:12px">Ce qu'il faut se procurer</h3>
+      <div class="tab-enveloppe" style="margin-bottom:26px">
+        <table>
+          <thead><tr><th>Quoi</th><th>Chez qui</th><th>Quelle taille</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Le serveur (VPS)</strong></td><td>Hetzner, Hostinger, OVH, Scaleway</td>
+              <td>2 vCPU, 4 Go de RAM, 40 Go de disque — Ubuntu 24.04</td></tr>
+            <tr><td><strong>Le nom de domaine</strong></td><td>OVH, Gandi, Namecheap, Cloudflare</td>
+              <td>Un <code>.com</code> ou <code>.fr</code></td></tr>
+            <tr><td><strong>Le certificat HTTPS</strong></td><td>Let's Encrypt, via Caddy</td>
+              <td>Automatique, rien à faire, rien à payer</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="intro">Un VPS plus petit (1 vCPU, 2 Go) suffit pour démarrer. Au-delà de quelques
+        espaces clients avec des vidéos, montez à 4 Go.</p>
+
+      <div class="etape" data-id="p3a">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 1</span>Commander le VPS et pointer le domaine</h3>
+        </header>
+        <div class="corps-e">
+          <ul class="liste">
+            <li>Commandez un VPS sous <strong>Ubuntu 24.04 LTS</strong>. Donnez votre clé SSH si on
+              vous la demande ; sinon notez le mot de passe <code>root</code> reçu par mail.</li>
+            <li>Notez l'<strong>adresse IP</strong> de la machine, par exemple <code>203.0.113.42</code>.</li>
+            <li>Chez votre registrar, dans la zone DNS, créez un enregistrement :
+              type <strong>A</strong>, nom <strong>planning</strong>, valeur <strong>l'IP du VPS</strong>.
+              Cela crée <code>planning.votredomaine.com</code>.</li>
+            <li>Attendez que ça se propage — de 2 minutes à 2 heures.</li>
+          </ul>
+          <div class="term">
+            <header><span class="ou">vérifier que le domaine pointe bien</span><button class="copier">Copier</button></header>
+<pre>dig +short planning.votredomaine.com
+<span class="c"># doit afficher l'IP de votre VPS, et rien d'autre</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p3b">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 2</span>Préparer la machine</h3>
+        </header>
+        <div class="corps-e">
+          <div class="term">
+            <header><span class="ou">depuis votre machine</span><button class="copier">Copier</button></header>
+<pre>ssh root@203.0.113.42          <span class="c"># votre IP</span>
+
+apt update &amp;&amp; apt upgrade -y
+apt install -y python3 python3-venv python3-pip git ufw
+
+<span class="c"># Le pare-feu : on n'ouvre que le strict nécessaire</span>
+ufw allow OpenSSH
+ufw allow 80
+ufw allow 443
+ufw --force enable</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Pourquoi on n'ouvre pas le port 5010</div>
+            <p>L'application écoutera sur <code>127.0.0.1:5010</code>, accessible de la machine
+              seule. C'est Caddy qui recevra le public sur 80 et 443 et transmettra. Exposer 5010
+              reviendrait à publier l'application sans HTTPS, à côté de la porte d'entrée.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p3c">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 3</span>Installer l'application sur le serveur</h3>
+        </header>
+        <div class="corps-e">
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>mkdir -p /opt &amp;&amp; cd /opt
+git clone https://github.com/VOTRE-COMPTE/mon-post-everyday.git posteveryday
+cd posteveryday
+
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
+./venv/bin/pip install gunicorn
+
+<span class="c"># La configuration : la même démarche qu'en local</span>
+cp config.exemple.json config.json
+nano config.json               <span class="c"># coller secret + mdp_hash</span>
+chmod 600 config.json          <span class="c"># lisible par root seulement</span></pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Dépôt privé</div>
+            <p>Si votre dépôt est privé, <code>git clone</code> demandera une authentification.
+              Le plus simple : <code>apt install gh</code> puis <code>gh auth login</code> sur le
+              serveur, et le clone passera.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p3d">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 4</span>La faire tourner en permanence (systemd)</h3>
+        </header>
+        <div class="corps-e">
+          <p>Un service systemd relance l'application toute seule après un plantage ou un
+            redémarrage de la machine. <code>PE_BASE</code> est indispensable : c'est l'adresse
+            publique à laquelle les réseaux sociaux renverront après connexion.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur · créer le service</span><button class="copier">Copier</button></header>
+<pre>cat &gt; /etc/systemd/system/posteveryday.service &lt;&lt;'FIN'
+[Unit]
+Description=Post Everyday
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/posteveryday
+Environment=PE_BASE=https://planning.votredomaine.com
+ExecStart=/opt/posteveryday/venv/bin/gunicorn -w 2 -b 127.0.0.1:5010 \
+          --timeout 600 app:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+FIN
+
+systemctl daemon-reload
+systemctl enable --now posteveryday
+systemctl status posteveryday --no-pager</pre>
+          </div>
+          <ul class="liste verif">
+            <li><code>systemctl is-active posteveryday</code> répond <code>active</code>.</li>
+            <li><code>curl -I http://127.0.0.1:5010/guide</code> répond <code>200</code>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p3e">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 5</span>Le domaine et le HTTPS, avec Caddy</h3>
+        </header>
+        <div class="corps-e">
+          <p>Caddy obtient et renouvelle le certificat Let's Encrypt tout seul. Sa configuration
+            tient en trois lignes — c'est la raison pour laquelle je le recommande ici plutôt que
+            nginx + certbot, qui demandent une dizaine de fichiers pour le même résultat.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+  | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  | tee /etc/apt/sources.list.d/caddy-stable.list
+apt update &amp;&amp; apt install -y caddy
+
+cat &gt; /etc/caddy/Caddyfile &lt;&lt;'FIN'
+planning.votredomaine.com {
+    reverse_proxy 127.0.0.1:5010
+}
+FIN
+
+systemctl reload caddy</pre>
+          </div>
+          <div class="encart bon">
+            <div class="t">✓ Point de contrôle</div>
+            <p>Ouvrez <code>https://planning.votredomaine.com/guide</code> dans un navigateur.
+              Le cadenas doit être fermé et le mode d'emploi s'afficher. Si vous voyez une erreur
+              de certificat, c'est que le DNS ne pointe pas encore : attendez et rechargez.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p3f">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 6</span>Brancher les réseaux sociaux (plus tard)</h3>
+        </header>
+        <div class="corps-e">
+          <p>L'application fonctionne entièrement sans cette étape : rédaction, agenda, carrousels,
+            prompteur. Seule la <strong>publication automatique</strong> est concernée, et elle
+            répond <code>501</code> tant que les applications éditeurs n'existent pas.</p>
+          <p>Ce n'est pas un défaut : chaque réseau exige une application déclarée et validée chez
+            lui, au nom du client ou de l'agence. Il faudra créer une app chez Meta, TikTok,
+            LinkedIn et Google, puis coller les identifiants dans <code>config.json</code>.
+            Comptez plusieurs jours de validation côté plateformes. À traiter une fois que le reste
+            tourne.</p>
+          <div class="encart piege">
+            <div class="t">⚠ L'adresse de retour doit correspondre</div>
+            <p>Dans chaque application éditeur, l'URL de redirection doit être exactement celle de
+              votre domaine — la même que <code>PE_BASE</code>. Une erreur ici, et la connexion
+              échoue sans message clair.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PARTIE 4 ══════════ -->
+    <section id="p4">
+      <div class="partie"><span class="num">Partie 04</span>
+        <h2>Vivre avec : mises à jour et sauvegardes</h2></div>
+
+      <div class="etape" data-id="p4a">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">04 · 1</span>Mettre en ligne ce que vous avez codé</h3>
+        </header>
+        <div class="corps-e">
+          <p>Vous travaillez en local avec Claude Code, vous poussez sur GitHub, puis vous tirez
+            sur le serveur. Deux commandes.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>cd /opt/posteveryday
+git pull
+./venv/bin/pip install -r requirements.txt   <span class="c"># si les dépendances ont bougé</span>
+systemctl restart posteveryday</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Pourquoi config.json ne pose pas de problème</div>
+            <p>Il est dans le <code>.gitignore</code> : <code>git pull</code> ne l'écrase jamais.
+              Vos clés et vos comptes restent en place à chaque mise à jour. Même chose pour les
+              bases <code>.db</code> et le dossier <code>medias/</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p4b">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">04 · 2</span>Sauvegarder, parce que rien ne le fait pour vous</h3>
+        </header>
+        <div class="corps-e">
+          <p>Le dépôt GitHub ne contient <strong>aucune donnée</strong> : ni les bases clients, ni
+            les médias, ni la configuration. Si le disque du VPS meurt, tout est perdu. Posez cette
+            sauvegarde quotidienne dès le premier jour.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>mkdir -p /opt/sauvegardes
+
+cat &gt; /opt/sauvegarder.sh &lt;&lt;'FIN'
+#!/bin/bash
+# Les donnees de Post Everyday : bases, medias, configuration.
+cd /opt/posteveryday || exit 1
+H=$(date +%Y%m%d-%H%M)
+tar czf "/opt/sauvegardes/pe-$H.tgz" \
+    --exclude='venv' --exclude='__pycache__' \
+    config.json espaces.json medias/ *.db 2>/dev/null
+# On garde 14 jours, pas plus : le disque n'est pas extensible.
+find /opt/sauvegardes -name 'pe-*.tgz' -mtime +14 -delete
+FIN
+
+chmod +x /opt/sauvegarder.sh
+/opt/sauvegarder.sh &amp;&amp; ls -lh /opt/sauvegardes
+
+<span class="c"># Tous les jours à 3 h du matin</span>
+(crontab -l 2&gt;/dev/null; echo "0 3 * * * /opt/sauvegarder.sh") | crontab -</pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Une sauvegarde sur la même machine n'est pas une sauvegarde</div>
+            <p>Si le disque lâche, elle part avec. Copiez l'archive ailleurs — votre ordinateur,
+              un espace de stockage. La commande, à lancer depuis chez vous :
+              <code>scp root@VOTRE-IP:/opt/sauvegardes/pe-*.tgz ~/Sauvegardes/</code></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PIÈGES ══════════ -->
+    <section id="pieges">
+      <div class="partie"><span class="num">Mémo</span>
+        <h2>Les pièges connus, en un coup d'œil</h2></div>
+
+      <div class="tab-enveloppe">
+        <table>
+          <thead><tr><th>Ce qui arrive</th><th>Pourquoi</th><th>Quoi faire</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Les données disparaissent à chaque mise en ligne</td>
+              <td>Hébergeur sans disque durable (Vercel, Netlify, Render en l'état)</td>
+              <td>Un VPS, comme dans la partie 03</td>
+            </tr>
+            <tr>
+              <td>La publication renvoie <code>501</code></td>
+              <td>Les applications éditeurs des réseaux ne sont pas créées</td>
+              <td>Normal au départ. Voir 03 · 6</td>
+            </tr>
+            <tr>
+              <td>Les réseaux renvoient sur le mauvais domaine</td>
+              <td><code>PE_BASE</code> absent ou différent de l'URL de redirection déclarée</td>
+              <td>Les rendre identiques, puis <code>systemctl restart posteveryday</code></td>
+            </tr>
+            <tr>
+              <td>Erreur de certificat HTTPS</td>
+              <td>Le DNS ne pointe pas encore vers le VPS</td>
+              <td>Vérifier avec <code>dig +short</code>, attendre, recharger</td>
+            </tr>
+            <tr>
+              <td>« forked from » sous le titre du dépôt</td>
+              <td>Vous avez cliqué sur Fork au lieu de Use this template</td>
+              <td>Supprimer le dépôt et recommencer en 01 · 2</td>
+            </tr>
+            <tr>
+              <td><code>git pull</code> refuse de fusionner</td>
+              <td>Des fichiers ont été modifiés directement sur le serveur</td>
+              <td>Ne jamais coder sur le serveur. Coder en local, pousser, tirer</td>
+            </tr>
+            <tr>
+              <td>L'avatar vidéo ne fonctionne pas</td>
+              <td>Il appelle un studio externe (Whisper + Remotion) sur une autre machine</td>
+              <td>L'animation maison du navigateur reste disponible sans lui</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </article>
+</div>
+
+<footer class="fin">
+  <div class="shell">
+    <p>Guide d'installation de Post Everyday. Les commandes ont été relevées sur l'installation
+      qui tourne aujourd'hui en production : service systemd, gunicorn sur le port 5010, données
+      SQLite sur le disque de la machine.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── Copier les commandes ────────────────────────────────── */
+  document.querySelectorAll(".term").forEach(function(bloc){
+    var bouton = bloc.querySelector(".copier");
+    var pre = bloc.querySelector("pre");
+    if(!bouton || !pre) return;
+    bouton.addEventListener("click", function(){
+      // On retire les commentaires : coller un commentaire dans un terminal
+      // marche, mais coller la ligne entiere est plus propre a relire.
+      var texte = pre.innerText;
+      var fini = function(){
+        bouton.textContent = "Copié";
+        bouton.classList.add("ok");
+        setTimeout(function(){ bouton.textContent = "Copier"; bouton.classList.remove("ok"); }, 1600);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(texte).then(fini, function(){});
+      } else {
+        var z = document.createElement("textarea");
+        z.value = texte; document.body.appendChild(z); z.select();
+        try { document.execCommand("copy"); fini(); } catch(e){}
+        document.body.removeChild(z);
+      }
+    });
+  });
+
+  /* ── L'avancée, gardée dans le navigateur ────────────────── */
+  var CLE = "pe-install-faites";
+  var etapes = Array.prototype.slice.call(document.querySelectorAll(".etape[data-id]"));
+  var jauge = document.getElementById("jauge");
+  var cpt = document.getElementById("cpt");
+
+  function lire(){
+    try {
+      var b = localStorage.getItem(CLE);
+      return b ? JSON.parse(b) : [];
+    } catch(e){ return []; }
+  }
+  function ecrire(liste){
+    try { localStorage.setItem(CLE, JSON.stringify(liste)); } catch(e){}
+  }
+  function majJauge(){
+    var n = document.querySelectorAll(".etape.faite").length;
+    var t = etapes.length;
+    if(cpt) cpt.textContent = n + " / " + t;
+    if(jauge) jauge.style.width = (t ? (n * 100 / t) : 0) + "%";
+  }
+
+  var faites = lire();
+  etapes.forEach(function(e){
+    if(faites.indexOf(e.dataset.id) >= 0) e.classList.add("faite");
+    var c = e.querySelector(".coche");
+    if(!c) return;
+    c.setAttribute("aria-pressed", e.classList.contains("faite") ? "true" : "false");
+    c.addEventListener("click", function(){
+      e.classList.toggle("faite");
+      var on = e.classList.contains("faite");
+      c.setAttribute("aria-pressed", on ? "true" : "false");
+      var l = lire();
+      var i = l.indexOf(e.dataset.id);
+      if(on && i < 0) l.push(e.dataset.id);
+      if(!on && i >= 0) l.splice(i, 1);
+      ecrire(l);
+      majJauge();
+    });
+  });
+  majJauge();
+
+  /* ── La partie où l'on se trouve, dans le sommaire ───────── */
+  var liens = Array.prototype.slice.call(document.querySelectorAll(".lien-rail"));
+  var sections = liens.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  if("IntersectionObserver" in window){
+    var vu = new IntersectionObserver(function(entrees){
+      entrees.forEach(function(x){
+        if(!x.isIntersecting) return;
+        var i = sections.indexOf(x.target);
+        if(i < 0) return;
+        liens.forEach(function(a){ a.classList.remove("ici"); });
+        liens[i].classList.add("ici");
+      });
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    sections.forEach(function(s){ if(s) vu.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>
