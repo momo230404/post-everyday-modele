@@ -1,7 +1,7 @@
-# Post Everyday
+# Système IA de publication automatisée sur les réseaux sociaux
 
-Une rédaction : Nadia et cinq agents (YouTube, Instagram, TikTok, LinkedIn,
-Facebook) qui écrivent, découpent et publient les contenus d'un client.
+Une rédaction complète : cinq agents (YouTube, Instagram, TikTok, LinkedIn,
+Facebook) qui écrivent, découpent et programment les contenus d'un client.
 
 > **Ceci est un modèle.** Cliquez sur **Use this template** en haut de cette
 > page : vous obtiendrez une copie complète, à vous, sans aucun lien avec ce
