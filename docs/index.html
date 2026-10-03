@@ -309,12 +309,13 @@ footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
 
 <div class="shell corps">
   <nav class="rail" aria-label="Sommaire">
-    <h2>Les 4 parties</h2>
+    <h2>Les 5 parties</h2>
     <ol>
       <li><a href="#p1" class="lien-rail"><span class="n">01</span><span>Le dépôt devient le vôtre</span></a></li>
       <li><a href="#p2" class="lien-rail"><span class="n">02</span><span>Claude Code sur votre machine</span></a></li>
       <li><a href="#p3" class="lien-rail"><span class="n">03</span><span>Le serveur et le domaine</span></a></li>
       <li><a href="#p4" class="lien-rail"><span class="n">04</span><span>Vivre avec : mises à jour, sauvegardes</span></a></li>
+      <li><a href="#p5" class="lien-rail"><span class="n">05</span><span>Les demandes aux plateformes</span></a></li>
       <li><a href="#pieges" class="lien-rail"><span class="n">!!</span><span>Les pièges connus</span></a></li>
     </ol>
     <div class="avancee">
@@ -821,11 +822,10 @@ systemctl restart posteveryday</pre>
           <p>L'application fonctionne entièrement sans cette étape : rédaction, agenda, carrousels,
             prompteur. Seule la <strong>publication automatique</strong> est concernée, et elle
             répond <code>501</code> tant que les applications éditeurs n'existent pas.</p>
-          <p>Ce n'est pas un défaut : chaque réseau exige une application déclarée et validée chez
-            lui, au nom du client ou de l'agence. Il faudra créer une app chez Meta, TikTok,
-            LinkedIn et Google, puis coller les identifiants dans <code>config.json</code>.
-            Comptez plusieurs jours de validation côté plateformes. À traiter une fois que le reste
-            tourne.</p>
+          <p>Ce n'est pas un défaut : chaque réseau exige une application déclarée chez lui.
+            Il faudra en créer une chez Google, Meta, LinkedIn et TikTok, puis coller les
+            identifiants dans l'écran <em>Connexions</em>. <strong>Toute la marche à suivre est en
+            <a href="#p5">partie 05</a></strong> — à traiter une fois que le reste tourne.</p>
           <div class="encart piege">
             <div class="t">⚠ L'adresse de retour doit correspondre</div>
             <p>Dans chaque application éditeur, l'URL de redirection doit être exactement celle de
@@ -901,6 +901,205 @@ chmod +x /opt/sauvegarder.sh
             <p>Si le disque lâche, elle part avec. Copiez l'archive ailleurs — votre ordinateur,
               un espace de stockage. La commande, à lancer depuis chez vous :
               <code>scp root@VOTRE-IP:/opt/sauvegardes/pe-*.tgz ~/Sauvegardes/</code></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PARTIE 5 ══════════ -->
+    <section id="p5">
+      <div class="partie"><span class="num">Partie 05</span>
+        <h2>Les demandes aux plateformes</h2></div>
+
+      <p class="intro">Pour que le système publie à votre place, chaque réseau veut une
+        <strong>application déclarée chez lui</strong>. Cela se fait une fois, et cela donne deux
+        valeurs — un identifiant et une clé — à coller dans l'écran <em>Connexions</em>.</p>
+
+      <div class="encart bon" style="margin-bottom:24px">
+        <div class="t">✓ Le clic-à-clic est dans le produit</div>
+        <p>Une fois votre site en ligne, ouvrez <code>votre-domaine.fr/guide</code> : chaque
+          console y est décrite écran par écran, avec les adresses de redirection à copier et les
+          deux liens légaux que toutes réclament. Cette partie-ci donne la <strong>méthode</strong>
+          et les pièges — ceux qui font perdre des jours et qu'aucune documentation officielle
+          n'annonce.</p>
+      </div>
+
+      <div class="encart" style="margin-bottom:24px">
+        <div class="t">La décision qui commande tout : au nom de qui ?</div>
+        <p><strong>Au nom du client</strong> — l'application est créée sous son compte, reste en
+          mode développement, et <em>aucune plateforme n'a rien à valider</em> : il est
+          propriétaire de l'application et administrateur de ses pages. Ça marche le jour même,
+          et c'est à refaire pour chaque client.</p>
+        <p style="margin-top:9px"><strong>Au nom de votre agence</strong> — une seule application
+          que tous vos clients autorisent. Mais chaque plateforme doit alors
+          <em>examiner</em> votre application : vérification d'entreprise, vidéo de démonstration,
+          site public. Plusieurs semaines, refus fréquents au premier passage.</p>
+        <p style="margin-top:9px">Montez vos premiers clients avec <strong>leur propre
+          application</strong>, et lancez la demande d'agence en parallèle sans en dépendre : une
+          démonstration filmée sur des publications qui existent passe bien mieux qu'une demande
+          sur un produit vide.</p>
+      </div>
+
+      <p class="intro">Les quatre démarches ne se valent pas. Dans cet ordre, vous aurez un réseau
+        qui publie ce soir, et le plus pénible attendra que vous ayez le temps.</p>
+
+      <div class="etape" data-id="p5a">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">05 · 1</span>YouTube — faisable ce soir</h3>
+        </header>
+        <div class="corps-e">
+          <p>La plus simple : <strong>aucune validation humaine</strong> pour publier sur la chaîne
+            du titulaire de l'application. Console Google Cloud → un projet → activer
+            <em>YouTube Data API v3</em> → écran de consentement → identifiants OAuth « Application
+            Web ».</p>
+          <div class="encart piege">
+            <div class="t">⚠ Les deux pièges</div>
+            <p><strong>Le mode Test expire au bout de 7 jours.</strong> L'autorisation s'éteint et
+              il faudrait relier le compte chaque semaine. Passez l'application en
+              <strong>Production</strong> : c'est un bouton, un écran d'avertissement apparaît à la
+              connexion, on continue, et ça ne s'éteint plus.</p>
+            <p style="margin-top:9px"><strong>Le quota.</strong> 10 000 unités par jour, et un envoi
+              de vidéo en coûte 1 600 — soit six vidéos par jour et par chaîne. Assez pour un
+              rythme quotidien, pas pour rattraper un mois de retard en une soirée.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p5b">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">05 · 2</span>Meta — une application pour Facebook et Instagram</h3>
+        </header>
+        <div class="corps-e">
+          <p>Une seule application couvre les deux réseaux : les mêmes deux valeurs vont dans les
+            deux blocs. Tant qu'elle reste en <strong>mode Développement</strong>, elle fonctionne
+            sur les pages dont le propriétaire de l'application est administrateur,
+            <strong>sans aucune validation</strong>.</p>
+          <ul class="liste">
+            <li>Le compte Instagram doit être <strong>professionnel</strong> (Business ou Créateur)
+              <strong>et relié à la page Facebook</strong>. Sans ce lien, l'API ne voit rien.</li>
+            <li>Ne cliquez pas « Passer en direct » : vous n'en avez pas besoin, et cela déclenche
+              une vérification d'entreprise.</li>
+          </ul>
+          <div class="encart piege">
+            <div class="t">⚠ Les quatre pièges, dans l'ordre où on les rencontre</div>
+            <p><strong>1. L'accès « Standard » suffit</strong> pour agir sur sa propre page avec sa
+              propre application. Ne demandez jamais l'accès « Avancé » : vérification d'entreprise
+              et passage en revue, des semaines pour rien.</p>
+            <p style="margin-top:9px"><strong>2. La liste des autorisations est filtrée par
+              l'application sélectionnée</strong> en haut de l'Explorateur. Une permission
+              « introuvable » veut presque toujours dire « mauvaise application dans le menu », et
+              non « permission absente ».</p>
+            <p style="margin-top:9px"><strong>3. « Continuer avec vos paramètres précédents »
+              rejoue l'ancien choix de pages.</strong> Prenez toujours <em>Modifier les
+              paramètres</em> et cochez la page voulue. Sinon le jeton sort sans erreur — mais
+              aveugle sur la nouvelle page.</p>
+            <p style="margin-top:9px"><strong>4. La liste des pages peut revenir vide</strong>
+              quand la page appartient à un portefeuille business. Ce n'est pas un problème de
+              droits : la demande directe de la page, elle, fonctionne.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p5c">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">05 · 3</span>LinkedIn — deux produits, deux mondes</h3>
+        </header>
+        <div class="corps-e">
+          <p>Il faut une <strong>page entreprise</strong> : sans elle, la console refuse de créer
+            l'application. Ensuite, tout dépend d'où vous voulez publier.</p>
+          <ul class="liste">
+            <li><strong>Sur le profil d'une personne</strong> — produits <em>Share on LinkedIn</em>
+              et <em>Sign In with OpenID Connect</em>, accordés automatiquement, souvent en moins
+              d'une minute. C'est le cas simple.</li>
+            <li><strong>Sur une page entreprise</strong> — il faut la <em>Community Management
+              API</em>, et c'est une autre affaire.</li>
+          </ul>
+          <div class="encart piege">
+            <div class="t">⚠ La règle qui coûte une matinée</div>
+            <p>La <strong>Community Management API doit être le SEUL produit de son
+              application</strong> — LinkedIn le refuse autrement, pour des raisons légales. Et un
+              produit déjà ajouté <strong>ne se retire pas</strong>. Si vous avez déjà demandé
+              <em>Share on LinkedIn</em> sur cette application, la porte est fermée définitivement :
+              il faut en créer une nouvelle.</p>
+            <p style="margin-top:9px">D'où un montage à <strong>deux applications</strong>, qui
+              n'est pas un bricolage : une pour les profils, une pour les pages.</p>
+          </div>
+          <div class="encart">
+            <div class="t">L'ordre qui marche pour une application « pages »</div>
+            <ul class="liste" style="margin-top:9px">
+              <li>Créer l'application neuve et la rattacher à la page entreprise.</li>
+              <li><strong>Settings → Verify</strong> d'abord. Tant que l'application n'est pas
+                vérifiée par un administrateur de la page, tous les produits « entreprise » restent
+                <strong>grisés</strong> — c'est la cause n° 1 d'un bouton éteint.</li>
+              <li>Aller <strong>directement</strong> sur Community Management API. Ne cliquez sur
+                aucun autre « Request access » avant.</li>
+              <li>Remplir le formulaire : nom légal, adresse, e-mail professionnel, site, politique
+                de confidentialité, cas d'usage.</li>
+            </ul>
+            <p style="margin-top:11px"><strong>Un refus ne se corrige pas sur place</strong> :
+              LinkedIn demande de créer une nouvelle application et de redéposer. On ne tire
+              qu'une fois — soignez le formulaire.</p>
+            <p style="margin-top:9px">Bonne nouvelle : <strong>une seule application suffit pour
+              toutes vos pages clientes</strong>. Pas une application par page.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etape" data-id="p5d">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">05 · 4</span>TikTok — le seul à examen humain, gardez-le pour la fin</h3>
+        </header>
+        <div class="corps-e">
+          <p>C'est le seul des quatre dont on ne peut pas promettre le résultat : TikTok soumet la
+            publication automatique à un <strong>examen humain</strong> et refuse régulièrement les
+            petites structures. Faites-le en dernier, quand les trois autres tournent, et ne le
+            promettez pas à un client avant de l'avoir obtenu une première fois.</p>
+          <ul class="liste">
+            <li>Produits <strong>Login Kit</strong> et <strong>Content Posting API</strong>.</li>
+            <li>Autorisations : <code>user.info.basic</code>, <code>video.upload</code>,
+              <strong><code>video.publish</code></strong>, et <code>user.info.stats</code> si vous
+              voulez les chiffres. ⚠️ <code>video.upload</code> seul ne donne que le
+              <strong>brouillon</strong> — c'est <code>video.publish</code> qui publie.</li>
+            <li>TikTok exige de <strong>prouver que le domaine vous appartient</strong> : un fichier
+              à déposer ou un enregistrement DNS à ajouter.</li>
+            <li>Une <strong>vidéo de démonstration</strong> est obligatoire, montrant l'usage exact
+              de chaque autorisation demandée.</li>
+          </ul>
+          <div class="encart piege">
+            <div class="t">⚠ Les cinq pièges, tous rencontrés pour de vrai</div>
+            <p><strong>1. Tant que l'application n'est pas auditée, le COMPTE doit être privé</strong>
+              — pas seulement la publication. Sinon TikTok refuse. Et le réglage met quelques
+              minutes à se propager : un essai fait juste après la bascule échoue encore.</p>
+            <p style="margin-top:9px"><strong>2. Sandbox et Production ont des autorisations
+              SÉPARÉES.</strong> On les ajoute côté Production en croyant avoir fini, alors que
+              c'est le sandbox qui sert à filmer la démonstration.</p>
+            <p style="margin-top:9px"><strong>3. Un jeton déjà délivré ne gagne JAMAIS de nouveaux
+              droits.</strong> Après avoir ajouté une autorisation dans la console, il faut
+              <strong>relier le compte à nouveau</strong> — sinon l'erreur persiste et on cherche
+              du côté du code pour rien.</p>
+            <p style="margin-top:9px"><strong>4. Un seul champ non autorisé fait rejeter TOUTE la
+              requête.</strong> Pas le champ : la requête entière. Ne demandez que ce que vos
+              autorisations couvrent.</p>
+            <p style="margin-top:9px"><strong>5. Ne demandez pas la lecture des vidéos
+              (<code>video.list</code>).</strong> Elle ne rend que les vidéos <em>publiques</em> —
+              or votre compte doit être privé tant que l'audit n'est pas passé. L'autorisation
+              serait <strong>indémontrable</strong> dans votre vidéo, et TikTok refuse le dossier
+              entier pour une autorisation non démontrée.</p>
+          </div>
+          <div class="encart">
+            <div class="t">Ce que TikTok veut voir à l'écran</div>
+            <p>Avant de publier, l'interface doit afficher le pseudo du compte visé, la question
+              <strong>« Qui peut voir cette vidéo ? »</strong> — dont les choix viennent de TikTok
+              et <strong>jamais avec une valeur par défaut</strong>, car TikTok interdit de trancher
+              à la place du créateur — et la déclaration de contenu commercial. C'est déjà construit
+              dans le produit, mais sachez pourquoi : l'examinateur le vérifie.</p>
+            <p style="margin-top:9px"><strong>Sans l'audit, la vidéo n'est pas publiée</strong> :
+              elle arrive en brouillon privé dans la boîte de réception TikTok, et quelqu'un termine
+              à la main. Le montage, la légende et le calendrier restent automatiques.</p>
           </div>
         </div>
       </div>
