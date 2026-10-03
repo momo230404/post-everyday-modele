@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Post Everyday — mode d'emploi</title>
+<style>
+/* La charte du tableau de bord : clair par défaut, sombre si l'application
+   l'est — le mode d'emploi ne doit pas jurer avec l'outil qu'il explique. */
+:root{
+  --fond:#f4f2fb; --carte:#ffffff; --bord:#e8e4f5; --txt:#1b1435; --mut:#7b74a0;
+  --vio:#7c4dff; --rose:#e94db5; --bleu:#3b8dff; --vert:#16b364; --or:#f6a609;
+}
+body.sombre{
+  --fond:#0e0a1e; --carte:#171130; --bord:#2a2150; --txt:#ece7ff; --mut:#9c92c9;
+  --vio:#a884ff; --rose:#ff5ac8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--txt);
+  font:400 15.5px/1.65 'Inter','Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:30px 20px 90px}
+a{color:var(--vio)}
+code{background:#7c4dff14;border-radius:5px;padding:1px 5px;font-size:.9em}
+.marque{font:800 26px/1 'Inter';letter-spacing:-.6px;
+  background:linear-gradient(90deg,#7c4dff,#e94db5);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.sous{font-size:10.5px;letter-spacing:.28em;color:var(--mut);text-transform:uppercase;margin:6px 0 26px}
+h1{font:800 34px/1.15 'Inter';margin:0 0 10px;letter-spacing:-1px}
+h2{font:800 21px/1.3 'Inter';margin:46px 0 6px;letter-spacing:-.3px;display:flex;
+  align-items:center;gap:11px}
+h2 .num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:10px;background:linear-gradient(135deg,#7c4dff,#e94db5);color:#fff;font-size:14px;
+  flex:none}
+h3{font:800 15.5px/1.35 'Inter';margin:22px 0 4px;color:var(--vio)}
+h4{font:800 14px/1.35 'Inter';margin:18px 0 6px}
+p{margin:8px 0}
+.chapo{font-size:17px;color:var(--mut)}
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;
+  padding:18px 20px;margin:16px 0;box-shadow:0 8px 24px #6a4bc40f}
+.carte.or{border-color:#f6c76a;background:linear-gradient(180deg,#fff8e9,var(--carte))}
+body.sombre .carte.or{background:linear-gradient(180deg,#2b2210,var(--carte));border-color:#5c4a1c}
+.carte.vert{border-color:#8fe0b6;background:linear-gradient(180deg,#effaf4,var(--carte))}
+body.sombre .carte.vert{background:linear-gradient(180deg,#0f2a1d,var(--carte));border-color:#2a6b45}
+.carte.rose{border-color:#f2b3dd;background:linear-gradient(180deg,#fdf0f8,var(--carte))}
+body.sombre .carte.rose{background:linear-gradient(180deg,#2a0f22,var(--carte));border-color:#6b2a5e}
+.etiq{font:800 10px/1 'Inter';letter-spacing:.22em;text-transform:uppercase;color:var(--mut);
+  display:block;margin-bottom:8px}
+ul,ol{margin:8px 0;padding-left:22px}
+li{margin:6px 0}
+.bouton{display:inline-block;border:1px solid var(--bord);border-radius:999px;padding:3px 11px;
+  font-size:13px;background:var(--carte);white-space:nowrap}
+.bouton.or{border-color:#f0c674;background:#fff3d8;color:#8a5b00}
+body.sombre .bouton.or{background:#3a2e12;color:#ffd782}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;background:var(--carte);
+  border:1px solid var(--bord);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--bord);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:800 10.5px/1 'Inter';letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.duo{grid-template-columns:1fr}}
+.pas{display:flex;gap:14px;align-items:flex-start;margin:14px 0}
+.pas .r{flex:none;width:27px;height:27px;border-radius:9px;background:var(--vio);color:#fff;
+  font:800 13px/27px 'Inter';text-align:center}
+.note{color:var(--mut);font-size:14px}
+.gros{font-size:17px;font-weight:700}
+.warn{background:#fdf0f8;border:1px solid #f2b3dd;border-radius:12px;padding:12px 14px;
+  font-size:14px}
+body.sombre .warn{background:#2a0f22;border-color:#6b2a5e}
+hr{border:0;border-top:1px solid var(--bord);margin:38px 0}
+.haut{position:sticky;top:0;background:linear-gradient(180deg,var(--fond) 70%,transparent);
+  padding:10px 0 14px;margin-bottom:6px;display:flex;gap:10px;align-items:center}
+.retour{display:inline-block;border:1px solid var(--bord);border-radius:999px;padding:7px 15px;
+  font-size:13.5px;text-decoration:none;color:var(--txt);background:var(--carte)}
+.retour:hover{border-color:#cdbdfb;color:var(--vio)}
+.bascule{margin-left:auto;border:1px solid var(--bord);background:var(--carte);color:var(--mut);
+  border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;cursor:pointer}
+.bascule:hover{color:var(--vio);border-color:#cdbdfb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="haut"><a class="retour" href="/">← Revenir à la rédaction</a><button class="bascule" type="button" onclick="basculer()" id="bsc">🌙 Sombre</button></div>
+
+  <div class="marque">Post Everyday</div>
+  <div class="sous">Mode d'emploi</div>
+
+  <h1>Cinq minutes pour comprendre l'outil</h1>
+  <p class="chapo">Post Everyday écrit les publications du client pour ses cinq réseaux.
+  Toi, tu choisis le sujet, tu relis, et tu poses la publication dans le calendrier.
+  <b>Tu n'as rien à inventer et rien à installer.</b></p>
+
+  <div class="carte or">
+    <span class="etiq">À lire avant tout le reste</span>
+    <p class="gros">Tu peux travailler <u>aujourd'hui</u>, même si aucun réseau n'est connecté.</p>
+    <p>Écrire les posts, les programmer, tout préparer : ça marche sans connexion.
+    La connexion sert uniquement à ce que le post parte <i>tout seul</i> à l'heure dite.
+    Sans elle, tu cliques <span class="bouton">Copier la légende</span> et tu colles dans
+    Instagram ou Facebook : trente secondes.</p>
+  </div>
+
+  <h2><span class="num">1</span>La rédaction : six bureaux, six personnes</h2>
+  <p>L'écran d'accueil est une rédaction vue en coupe. À gauche, l'équipe :</p>
+  <table>
+    <tr><th>Qui</th><th>Son rôle</th></tr>
+    <tr><td><b>Nadia</b></td><td>La chef. Elle ne rédige pas : elle donne le plan de la semaine (combien de posts, quel jour, quelle heure).</td></tr>
+    <tr><td><b>Victor</b></td><td>YouTube</td></tr>
+    <tr><td><b>Léna</b></td><td>Instagram</td></tr>
+    <tr><td><b>Malik</b></td><td>TikTok</td></tr>
+    <tr><td><b>Claire</b></td><td>LinkedIn</td></tr>
+    <tr><td><b>Serge</b></td><td>Facebook</td></tr>
+  </table>
+  <p class="note">Ce ne sont pas de vraies personnes : c'est une façon de dire « le style d'écriture
+  d'Instagram n'est pas celui de LinkedIn ». Cliquer sur un agent, c'est choisir le réseau.</p>
+
+  <h2><span class="num">2</span>Ta journée, dans l'ordre</h2>
+
+  <div class="pas"><div class="r">1</div><div>
+    <h3>Remplir « Mon métier » — une seule fois par client</h3>
+    <p>En haut : <span class="bouton">Mon métier</span>. Cinq champs : le métier, la zone,
+    les clients visés, ce qu'on vend, ce qui différencie l'entreprise.
+    <b>C'est la base de tout ce qui sera écrit ensuite.</b> Mal rempli, les posts sonnent creux ;
+    bien rempli, ils parlent du vrai métier du client.</p>
+  </div></div>
+
+  <div class="pas"><div class="r">2</div><div>
+    <h3>Cliquer sur un agent pour écrire un post</h3>
+    <p>Clique par exemple sur <b>Léna</b> (Instagram) dans la colonne de gauche. Elle propose
+    des <b>idées de sujet</b>. Tu en choisis une, puis un <b>format</b> :</p>
+    <ul>
+      <li><b>Le script</b> — le texte d'une vidéo, quelle qu'elle soit. L'outil le déroule
+      à l'écran pendant le tournage (bouton « Ouvrir le prompteur »). ~20 min.</li>
+      <li><b>Le carrousel</b> — des images à faire glisser, une idée par image. Aucun tournage.
+      C'est le format le plus facile pour commencer.</li>
+      <li><b>L'avatar</b> — une photo du client qui parle toute seule. Quand personne n'a le temps de filmer.</li>
+    </ul>
+    <p>L'outil écrit. Tu relis, tu corriges si besoin, puis <b>tu mets en file</b>.</p>
+  </div></div>
+
+  <div class="pas"><div class="r">3</div><div>
+    <h3>Poser le post dans l'agenda</h3>
+    <p>En haut : <span class="bouton or">🗓 Agenda de publication</span>. Le calendrier du mois
+    montre les créneaux conseillés en pointillé (le jour et l'heure où les clients du client
+    sont là). Tu cliques un créneau, tu choisis un post prêt, il se pose dessus.</p>
+    <p class="note">⚠️ Un post « en file » n'est <b>pas</b> programmé. Tant qu'il n'est pas posé
+    dans l'agenda, il attend. C'est l'erreur numéro un.</p>
+  </div></div>
+
+  <div class="pas"><div class="r">4</div><div>
+    <h3>Publier</h3>
+    <p><b>Si le réseau est connecté :</b> rien à faire, le post part à l'heure prévue.</p>
+    <p><b>S'il ne l'est pas :</b> ouvre le post, clique <span class="bouton">Copier la légende</span>
+    (et « Copier le script » pour une vidéo), puis colle dans l'application du réseau.
+    Le travail de rédaction est déjà fait, il ne reste que le copier-coller.</p>
+  </div></div>
+
+  <hr>
+
+  <h2><span class="num">3</span>Créer un contenu : on choisit d'abord le format</h2>
+  <p class="chapo">Depuis la dernière mise à jour, cliquer sur un agent ne lance plus
+  un script tout de suite. Il demande d'abord <b>ce que tu veux fabriquer</b>.</p>
+
+  <div class="carte">
+    <span class="etiq">L'écran qui s'ouvre</span>
+    <p class="gros">« Sélectionnez le type de contenu que vous souhaitez créer »</p>
+    <p>Trois cartes, trois façons de faire un post. Tu cliques sur l'une d'elles,
+    <b>et seulement ensuite</b> l'agent propose des sujets. Le contenu sera fabriqué
+    dans ce format-là. Un lien « ← Changer de format » permet de revenir sur ton choix.</p>
+  </div>
+
+  <table>
+    <tr><th>Format</th><th>Ce que c'est</th><th>Quand le choisir</th><th>Ce que ça coûte</th></tr>
+    <tr><td><b>1 · Script</b></td>
+        <td>Le texte d'une vidéo — pas forcément la tienne. Le prompteur le déroule
+            pendant le tournage.</td>
+        <td>Dès qu'il y a une vidéo à faire. <b>Le type se choisit juste après</b>
+            (voir ci-dessous).</td>
+        <td>20 minutes et un téléphone.</td></tr>
+    <tr><td><b>2 · Carrousel</b></td>
+        <td>Des planches qu'on fait glisser, une idée par planche, la dernière invite
+            à te contacter.</td>
+        <td>Quand tu veux expliquer. C'est le format qu'on enregistre et qu'on renvoie
+            à un proche. <b>Le plus simple pour commencer</b> : aucun tournage.</td>
+        <td>Tu relis, tu publies.</td></tr>
+    <tr><td><b>3 · Avatar</b></td>
+        <td>Une photo qui parle, lèvres synchronisées — la tienne, ou celle de ton
+            jumeau IA (section suivante).</td>
+        <td>Quand tu n'as pas le temps de tourner, ou pas envie.</td>
+        <td>Une photo, deux minutes de fabrication.</td></tr>
+  </table>
+
+  <p class="note">Rien n'est définitif : une fois le post écrit, les onglets en haut du
+  panneau permettent encore de basculer d'un format à l'autre.</p>
+
+  <h3>Le script : quatre types de vidéo</h3>
+  <p>Choisir « Script » ouvre une seconde question : <b>quel type de vidéo ?</b>
+  Le texte n'est pas écrit pareil selon la réponse.</p>
+  <table>
+    <tr><th>Type</th><th>Ce que c'est</th><th>Quand</th></tr>
+    <tr><td><b>Face caméra</b></td>
+        <td>Le client regarde l'objectif et explique.</td>
+        <td>Pour installer la confiance : on achète à une tête, pas à un logo.</td></tr>
+    <tr><td><b>Témoignage client</b></td>
+        <td>Le script de quelqu'un qui raconte : le problème, ce qu'on a fait,
+            ce que ça a changé.</td>
+        <td>Quand la preuve doit venir d'un autre que soi.</td></tr>
+    <tr><td><b>Avant / après</b></td>
+        <td>L'état de départ, le chemin, le résultat.</td>
+        <td>Quand le métier se voit à l'œil — c'est le plus partagé.</td></tr>
+    <tr><td><b>Format court</b></td>
+        <td>Une seule idée, une accroche qui retient dans les trois premières
+            secondes, une chute qui fait commenter.</td>
+        <td>Pour aller chercher des gens qui ne connaissent pas encore le client.</td></tr>
+  </table>
+  <p class="note">Témoignage et avant/après écrivent le script directement : le sujet
+  est déjà donné par le type. Face caméra et format court proposent d'abord une liste
+  de sujets.</p>
+
+  <h2><span class="num">4</span>Le jumeau IA : des vidéos de toi sans te filmer</h2>
+  <p class="chapo">Dans le format <b>Avatar</b>, le panneau « Mon jumeau IA » fabrique
+  de vraies photos de la personne, dans la scène qu'on choisit. Ensuite, elle bouge
+  et elle dit le script du post.</p>
+
+  <div class="carte">
+    <span class="etiq">Le principe, en trois temps</span>
+    <ol>
+      <li><b>Une fois :</b> tu déposes 5 à 15 selfies. L'outil apprend le visage.
+        Dix à vingt minutes, et c'est fini pour toujours.</li>
+      <li><b>À chaque post :</b> tu choisis une scène (studio, chantier, terrasse, plage…)
+        et il sort quatre photos de toi dedans.</li>
+      <li>Tu cliques sur celle que tu préfères : les étapes 2 et 3 la mettent en
+        mouvement et lui font <b>dire le script du post</b>.</li>
+    </ol>
+  </div>
+
+  <h3>Les selfies qui donnent un bon résultat</h3>
+  <ul>
+    <li>Visage <b>net et bien éclairé</b>, pas de contre-jour.</li>
+    <li>Des <b>angles différents</b> : face, trois-quarts, profil.</li>
+    <li>Des <b>lumières différentes</b> : dehors, dedans, jour, soir.</li>
+    <li><b>Une seule personne</b> par photo, pas de lunettes de soleil, pas de filtre.</li>
+  </ul>
+  <p class="note">Dix bonnes photos valent mieux que quinze approximatives : c'est
+  ce bloc qui décide de la ressemblance, tout le reste en découle.</p>
+
+  <h2><span class="num">5</span>La clé fal.ai — ce que c'est, et où la prendre</h2>
+
+  <div class="carte or">
+    <span class="etiq">Une clé API, en une phrase</span>
+    <p class="gros">C'est un mot de passe pour machines.</p>
+    <p>Toi, tu te connectes à un site avec ton email. Un programme, lui, ne peut pas
+    taper un mot de passe dans un écran : on lui donne une longue suite de caractères
+    — la clé — qui dit « celui qui présente ça, c'est bien moi ».</p>
+    <p>Les photos ne sont pas fabriquées sur ton ordinateur : ça demande des cartes
+    graphiques qui coûtent le prix d'une voiture. Elles sont fabriquées chez
+    <b>fal.ai</b>, qui facture à l'usage. La clé sert à deux choses : prouver que la
+    demande vient de toi, et <b>débiter le bon compte</b>. C'est pour ça que chaque
+    client met la sienne.</p>
+  </div>
+
+  <h3>Où la récupérer — cinq minutes</h3>
+  <ol>
+    <li>Aller sur <b>fal.ai</b> et créer un compte (Google ou GitHub, c'est le plus rapide).</li>
+    <li>Ajouter un moyen de paiement dans <b>Billing</b>. Sans ça, la clé existe mais
+      chaque demande est refusée — c'est l'erreur numéro un.</li>
+    <li>Ouvrir <b>Dashboard → API Keys → Add key</b>, lui donner un nom.</li>
+    <li>La clé s'affiche <b>une seule fois</b> et commence par <code>fal_</code> :
+      la copier tout de suite.</li>
+    <li>La coller dans « Mon jumeau IA », bloc 1, puis Enregistrer.</li>
+  </ol>
+  <p>Elle part sur notre serveur, y reste, et <b>ne redescend jamais dans le
+  navigateur</b>. Le bouton « Retirer » l'efface quand on veut.</p>
+
+  <h3>Ce que ça coûte</h3>
+  <ul>
+    <li><b>2 $ une fois</b> pour apprendre le visage.</li>
+    <li><b>0,035 $ la photo</b> — quatre photos, quatorze centimes.</li>
+    <li>La mise en mouvement et la parole passent par les outils déjà branchés du studio.</li>
+  </ul>
+
+  <div class="carte rose">
+    <span class="etiq">Les trois règles</span>
+    <ul style="margin:0">
+      <li>Une clé, c'est de l'argent : <b>jamais</b> par mail ni par WhatsApp, jamais
+        dans une capture d'écran. Si elle fuite, on la supprime chez fal et on en
+        recrée une : dix secondes.</li>
+      <li>Ce sont <b>les photos du client</b>, déposées avec son accord — la case à
+        cocher n'est pas décorative, le serveur refuse sans elle.</li>
+      <li>Les scènes à caractère sexuel et tout ce qui touche aux mineurs sont
+        refusées avant même d'être envoyées.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">6</span>« Connexions » : ce que c'est vraiment</h2>
+  <p class="chapo">C'est le bouton qui bloque tout le monde. Voilà pourquoi.</p>
+
+  <div class="carte rose">
+    <span class="etiq">Le malentendu</span>
+    <p>« Connexions » <b>n'est pas</b> un écran où l'on tape un identifiant et un mot de passe
+    Instagram. Ça n'existe pas : aucun réseau ne permet ça.</p>
+    <p>Pour qu'un outil publie à la place de quelqu'un, le réseau exige que
+    <b>le propriétaire du compte crée une petite « application »</b> chez lui (chez Meta,
+    Google, TikTok, LinkedIn) et donne deux codes techniques. C'est ça, « Connexions ».</p>
+  </div>
+
+  <h3>Qui fait quoi</h3>
+  <table>
+    <tr><th>Étape</th><th>Qui</th><th>Où</th></tr>
+    <tr><td>Créer l'application chez Meta / Google / TikTok / LinkedIn</td>
+        <td><b>Le client</b> (c'est son compte, ses pages)</td>
+        <td>Le pas-à-pas : <a href="/guide" target="_blank">votre-domaine.fr/guide</a></td></tr>
+    <tr><td>Coller les deux codes dans l'outil</td>
+        <td>Le client, ou toi s'il te les envoie</td>
+        <td>Bouton <span class="bouton">Connexions</span>, volet du réseau</td></tr>
+    <tr><td>Cliquer « Autoriser » et choisir la page</td>
+        <td><b>Le client</b>, connecté à son compte</td>
+        <td>Le gros bouton du réseau, dans Connexions</td></tr>
+    <tr><td>Écrire, programmer, suivre</td>
+        <td><b>Toi</b></td>
+        <td>Tout le reste de l'outil</td></tr>
+  </table>
+
+  <div class="carte vert">
+    <span class="etiq">Ce que tu demandes au client, mot pour mot</span>
+    <p>« Pour publier automatiquement sur vos réseaux, il me faut deux choses de votre côté :
+    une application créée dans votre compte Meta (ou Google / TikTok / LinkedIn) — je vous envoie
+    la marche à suivre en images — et l'autorisation en un clic depuis votre compte.
+    Comptez vingt minutes, une seule fois. En attendant je prépare tout, et je publie à la main. »</p>
+  </div>
+
+  <h3>Comment savoir où on en est</h3>
+  <p>Dans <span class="bouton">Connexions</span>, chaque réseau affiche son état en clair :</p>
+  <ul>
+    <li><b>à activer une première fois</b> — il manque les codes de l'application ;</li>
+    <li><b>prêt — il ne reste qu'à autoriser</b> — les codes sont là, le client doit cliquer « Autoriser » ;</li>
+    <li><b>✓ connecté</b> — le post partira tout seul.</li>
+  </ul>
+  <p class="note">La pastille « à lier » à côté d'un agent, dans la colonne de gauche, veut dire
+  la même chose : ce réseau n'est pas encore branché.</p>
+
+  <hr>
+
+  <h2><span class="num">7</span>Les six boutons du haut, en une ligne chacun</h2>
+  <table>
+    <tr><th>Bouton</th><th>À quoi ça sert</th></tr>
+    <tr><td><span class="bouton">Mon métier</span></td><td>La fiche du client. À remplir en premier.</td></tr>
+    <tr><td><span class="bouton or">🗓 Agenda de publication</span></td><td>Le calendrier. C'est ici qu'on programme.</td></tr>
+    <tr><td><span class="bouton">Plan de la semaine</span></td><td>Ce que Nadia conseille : combien de posts, quels jours.</td></tr>
+    <tr><td><span class="bouton">La file</span></td><td>Les posts écrits qui attendent une date.</td></tr>
+    <tr><td><span class="bouton">Tableau de bord</span></td><td>Les chiffres. À regarder une fois par semaine, pas pour travailler.</td></tr>
+    <tr><td><span class="bouton">Connexions</span></td><td>Brancher les réseaux (voir plus haut). Rarement.</td></tr>
+    <tr><td><span class="bouton">Le nom du client</span></td><td>Tout à gauche : changer de client. Vérifie toujours que c'est le bon avant d'écrire.</td></tr>
+  </table>
+
+  <h2><span class="num">8</span>Les pièges qui font perdre une heure</h2>
+  <div class="duo">
+    <div class="carte">
+      <span class="etiq">Le tableau de bord s'ouvre tout seul</span>
+      <p>Ce n'est pas la page de travail. Ferme-le avec la croix : la rédaction est derrière.</p>
+    </div>
+    <div class="carte">
+      <span class="etiq">« En file » ≠ programmé</span>
+      <p>Un post en file attend. Il faut le poser sur un créneau de l'agenda pour qu'il ait une date.</p>
+    </div>
+    <div class="carte">
+      <span class="etiq">Les abonnés ne montent pas</span>
+      <p>Tant qu'un réseau n'est pas connecté, le chiffre se saisit à la main dans le tableau de bord.
+      C'est normal, ce n'est pas une panne.</p>
+    </div>
+    <div class="carte">
+      <span class="etiq">Tu écris pour le mauvais client</span>
+      <p>Le nom du client est la première pastille en haut. Un coup d'œil avant de commencer.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">9</span>Ta première demi-heure, en cinq lignes</h2>
+  <ol>
+    <li>Vérifier le nom du client en haut à gauche.</li>
+    <li>Remplir <b>Mon métier</b> (une fois par client).</li>
+    <li>Cliquer <b>Léna</b>, choisir une idée, format <b>carrousel</b>, relire, mettre en file.
+    Recommencer deux fois.</li>
+    <li>Ouvrir l'<b>agenda</b>, poser les trois posts sur les créneaux conseillés de la semaine.</li>
+    <li>Écrire au client pour les <b>connexions</b> (le message tout prêt est plus haut).</li>
+  </ol>
+  <p class="note">Si quelque chose ne se passe pas comme ici, ce n'est pas toi : dis-le,
+  ça veut dire que l'outil doit être corrigé.</p>
+
+  <div class="haut" style="position:static;margin-top:40px">
+    <a class="retour" href="/">← Revenir à la rédaction</a>
+  </div>
+</div>
+<script>
+/* Le mode d'emploi suit le thème choisi dans l'application : les deux vivent
+   dans le même navigateur, ils partagent le même témoin. */
+function marquer(){
+  const b = document.getElementById('bsc');
+  if (b) b.textContent = document.body.classList.contains('sombre') ? '☀️ Clair' : '🌙 Sombre';
+}
+function basculer(){
+  const s = !document.body.classList.contains('sombre');
+  document.body.classList.toggle('sombre', s);
+  try { localStorage.pe_theme = s ? 'sombre' : 'clair'; } catch (e) {}
+  marquer();
+}
+(function(){
+  let s = false;
+  try { s = localStorage.pe_theme === 'sombre'; } catch (e) {}
+  document.body.classList.toggle('sombre', s);
+  marquer();
+})();
+</script>
+</body>
+</html>

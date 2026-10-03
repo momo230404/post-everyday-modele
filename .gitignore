@@ -1,0 +1,21 @@
+# Les donnees et les secrets ne quittent jamais le serveur.
+config.json
+espaces.json
+*.db
+*.db-*
+medias/*
+!medias/.gitkeep
+venv/
+__pycache__/
+*.pyc
+# Les sauvegardes horodatees restent locales : elles n'ont rien a faire
+# dans l'historique, git EST deja l'historique.
+*.bak_*
+*.retire_*
+*.desactive
+envoi_github.log
+
+# Une sauvegarde de config.json est une CONFIG : elle contient les memes
+# secrets. Elle ne doit jamais etre suivie.
+config.json.bak*
+config.json.*

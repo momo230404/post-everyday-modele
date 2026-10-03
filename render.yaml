@@ -1,0 +1,33 @@
+# Post Everyday — un service web, un disque.
+#
+# Le disque est le point important : pe.db et medias/ y vivent, et lui seul
+# survit aux redemarrages. Sans lui, le profil et les jetons OAuth repartent
+# de zero a chaque deploiement.
+
+services:
+  - type: web
+    name: post-everyday
+    runtime: python
+    plan: starter                     # le disque n'existe pas sur le plan gratuit
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 600
+    healthCheckPath: /api/sante       # laissee ouverte, la porte l'ignore
+
+    disk:
+      name: donnees
+      mountPath: /var/donnees
+      sizeGB: 5
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: PE_DONNEES                # ou pe.db et medias/ atterrissent
+        value: /var/donnees
+      - key: PE_MOTDEPASSE             # la porte ; mot de passe tire au sort
+        generateValue: true
+      - key: PE_BASE                   # l'URL publique, pour les retours OAuth
+        sync: false
+      - key: PE_CONFIG                 # les secrets editeurs, en JSON sur une ligne
+        sync: false
+      - key: PE_STUDIO                 # Whisper + Remotion, s'ils sont joignables
+        sync: false

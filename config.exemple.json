@@ -1,0 +1,84 @@
+{
+ "_lisez_moi": "Copiez ce fichier en config.json et remplissez-le. Il ne part JAMAIS sur GitHub (voir .gitignore) : il contient les cles d API et les mots de passe des comptes.",
+ "youtube": {
+  "client_id": "",
+  "client_secret": ""
+ },
+ "linkedin": {
+  "client_id": "",
+  "client_secret": ""
+ },
+ "facebook": {
+  "app_id": "",
+  "app_secret": ""
+ },
+ "instagram": {
+  "app_id": "",
+  "app_secret": ""
+ },
+ "tiktok": {
+  "client_key": "",
+  "client_secret": ""
+ },
+ "studio": {
+  "relay_key": ""
+ },
+ "llm": {
+  "provider": "",
+  "model": "",
+  "base_url": "",
+  "api_key": "",
+  "actif": false
+ },
+ "comptes": [
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  },
+  {
+   "identifiant": "",
+   "nom": "",
+   "role": "",
+   "espace": "",
+   "mdp_hash": ""
+  }
+ ],
+ "secret": ""
+}
