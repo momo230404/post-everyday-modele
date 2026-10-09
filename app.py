@@ -9,6 +9,10 @@ l'interface dans index.html.
 """
 
 import json
+import hmac
+import logging
+import fcntl
+import tempfile
 import os
 import re
 import secrets
@@ -21,7 +25,7 @@ import urllib.request
 from datetime import date, datetime, timedelta
 
 from flask import (Flask, has_request_context, jsonify, redirect,
-                   render_template_string, request, send_from_directory, session)
+                   render_template_string, request, send_from_directory, session, abort)
 
 import depots
 import moteur as M
@@ -151,6 +155,10 @@ def _porte():
     chemin = request.path
     if any(chemin == l or chemin.startswith(l) for l in LIBRES):
         return None
+    if chemin == "/installation":
+        return None
+    if not comptes():
+        return render_template_string(PAGE_NON_CONFIGUREE), 503
     # ⚠️ Les fichiers de preuve de domaine sont A LA RACINE : aucun préfixe de
     # LIBRES ne peut les couvrir. On les laisse passer un par un, et seulement
     # s'ils existent vraiment — on n'ouvre pas la racine du site.
@@ -158,8 +166,6 @@ def _porte():
         f = _verif_nom(chemin)
         if f and os.path.exists(os.path.join(VERIFS, f)):
             return None
-    if not comptes():          # aucun compte défini : on ne bloque personne
-        return None
     if session.get("qui"):
         # Un compte non-admin est enfermé dans SON espace client.
         c = compte_courant()
@@ -189,6 +195,89 @@ def connexion():
         erreur = "Identifiant ou mot de passe incorrect."
         time.sleep(1)          # on ralentit les essais en rafale
     return render_template_string(PAGE_CONNEXION, erreur=erreur)
+
+
+class _MasquerJetonInstallation(logging.Filter):
+    def filter(self, record):
+        message = record.getMessage()
+        record.msg = re.sub(r"(/installation\?)[^\s]*", r"\1[masqué]", message)
+        record.args = ()
+        return True
+
+
+# Le serveur de développement journalise l'adresse complète de la requête.
+logging.getLogger("werkzeug").addFilter(_MasquerJetonInstallation())
+
+
+def _jeton_installation_valide():
+    if comptes():
+        return False
+    try:
+        with open(os.path.join(DONNEES, "jeton_installation.txt"), encoding="utf-8") as fichier:
+            attendu = fichier.read().strip()
+    except OSError:
+        return False
+    recu = request.args.get("jeton", "")
+    return bool(attendu and recu and hmac.compare_digest(
+        recu.encode("utf-8"), attendu.encode("utf-8")))
+
+
+@app.route("/installation", methods=["GET", "POST"])
+def installation():
+    if not _jeton_installation_valide():
+        time.sleep(1)
+        abort(404)
+    erreur = ""
+    if request.method == "POST":
+        identifiant = (request.form.get("identifiant") or "").strip().lower()
+        motdepasse = request.form.get("motdepasse") or ""
+        confirmation = request.form.get("confirmation") or ""
+        if not identifiant:
+            erreur = "Saisissez un identifiant."
+        elif len(motdepasse) < 12:
+            erreur = "Le mot de passe doit contenir au moins douze caractères."
+        elif motdepasse != confirmation:
+            erreur = "Les deux mots de passe sont différents."
+        if erreur:
+            time.sleep(1)
+        else:
+            # Le verrou couvre la relecture et le remplacement, même avec
+            # plusieurs processus serveur : un seul premier compte peut gagner.
+            with open(os.path.join(DONNEES, ".installation.lock"), "a") as verrou:
+                os.chmod(verrou.name, 0o600)
+                fcntl.flock(verrou, fcntl.LOCK_EX)
+                if not _jeton_installation_valide():
+                    abort(404)
+                with open(CONFIG, encoding="utf-8") as fichier:
+                    configuration = json.load(fichier)
+                configuration["comptes"] = [{
+                    "identifiant": identifiant, "nom": identifiant,
+                    "role": "admin", "mdp_hash": generate_password_hash(motdepasse)
+                }]
+                temporaire = None
+                try:
+                    with tempfile.NamedTemporaryFile(
+                            mode="w", encoding="utf-8", dir=DONNEES,
+                            prefix=".installation-", delete=False) as fichier:
+                        temporaire = fichier.name
+                        os.chmod(temporaire, 0o600)
+                        json.dump(configuration, fichier, ensure_ascii=False, indent=2)
+                        fichier.flush()
+                        os.fsync(fichier.fileno())
+                    os.replace(temporaire, CONFIG)
+                    temporaire = None
+                finally:
+                    if temporaire is not None:
+                        os.unlink(temporaire)
+                os.unlink(os.path.join(DONNEES, "jeton_installation.txt"))
+            session.clear()
+            session.permanent = True
+            session["qui"] = identifiant
+            return redirect("/")
+    reponse = app.make_response(render_template_string(PAGE_INSTALLATION, erreur=erreur))
+    reponse.headers["Cache-Control"] = "no-store"
+    reponse.headers["Referrer-Policy"] = "no-referrer"
+    return reponse
 
 
 @app.route("/deconnexion")
@@ -227,6 +316,28 @@ PAGE_CONNEXION = """<!doctype html><html lang=fr><head>
   <input name=motdepasse type=password autocomplete=current-password>
   <button>Entrer</button>
 </form></body></html>"""
+
+
+PAGE_INSTALLATION = PAGE_CONNEXION.replace(
+    "Connexion — Post Everyday", "Installation — Post Everyday"
+).replace(
+    "Vos réseaux, un seul endroit.",
+    "Créez votre premier compte administrateur pour ouvrir le site."
+).replace(
+    "autocomplete=current-password", "autocomplete=new-password minlength=12 required"
+).replace(
+    "autocomplete=username autofocus", "autocomplete=username autofocus required"
+).replace(
+    "<button>Entrer</button>",
+    '<label>Confirmez le mot de passe</label>'
+    '<input name=confirmation type=password autocomplete=new-password minlength=12 required>'
+    '<button>Créer mon compte</button>'
+)
+
+PAGE_NON_CONFIGUREE = """<!doctype html><html lang=fr><head>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Installation — Post Everyday</title></head>
+<body><p>Le site n’est pas encore configuré.</p></body></html>"""
 
 
 def espace_courant():
