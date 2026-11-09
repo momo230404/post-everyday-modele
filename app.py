@@ -2331,6 +2331,7 @@ def _tour_de_publication():
             finally:
                 cc.close()
     _PUBLI_ETAT["dernier_tour"] = nowi
+    _etat_ecrire()
 
 
 def _marquer(e, pid, etat, souci):
@@ -2345,6 +2346,53 @@ def _marquer(e, pid, etat, souci):
         pass
     finally:
         c.close()
+
+
+# ─── L'état du minuteur, lisible par TOUS les ouvriers ────────────────────
+# ⚠️ Un seul processus gunicorn tient le verrou et publie. _PUBLI_ETAT est de
+# la mémoire locale : les autres ouvriers répondaient donc « publication_auto:
+# false » alors que la publication tournait très bien. Comme /api/sante tombe
+# au hasard sur l'un des ouvriers, le contrôle du mode d'emploi échouait une
+# fois sur deux. On pose donc l'état dans un fichier que tout le monde lit.
+ETAT_PUBLI_FICHIER = os.path.join(DONNEES, "publication_etat.json")
+ETAT_PUBLI_FRAIS = 300          # un tour a moins de 5 min = le minuteur vit
+
+
+def _etat_ecrire():
+    """Écrit l'état du tour. Jamais bloquant : si ça rate, on publie quand même."""
+    try:
+        tmp = ETAT_PUBLI_FICHIER + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"dernier_tour": _PUBLI_ETAT["dernier_tour"],
+                       "publies": _PUBLI_ETAT["publies"],
+                       "soucis": _PUBLI_ETAT["soucis"],
+                       "horodatage": time.time()}, f)
+        os.replace(tmp, ETAT_PUBLI_FICHIER)     # remplacement atomique
+    except Exception:
+        pass
+
+
+def _etat_lire():
+    """L'état vu par n'importe quel ouvrier. « actif » se DÉDUIT de la fraîcheur
+    du dernier tour : un fichier laissé par un service arrêté ne ment pas."""
+    if _PUBLI_ETAT["actif"]:                    # c'est moi qui publie : je sais
+        return {"actif": True,
+                "dernier_tour": _PUBLI_ETAT["dernier_tour"],
+                "publies": _PUBLI_ETAT["publies"],
+                "soucis": _PUBLI_ETAT["soucis"]}
+    vide = {"actif": False, "dernier_tour": "", "publies": 0, "soucis": 0}
+    if not PUBLI_AUTO:
+        return vide
+    try:
+        with open(ETAT_PUBLI_FICHIER, encoding="utf-8") as f:
+            d = json.load(f)
+    except Exception:
+        return vide
+    frais = (time.time() - float(d.get("horodatage") or 0)) < ETAT_PUBLI_FRAIS
+    return {"actif": bool(frais),
+            "dernier_tour": d.get("dernier_tour") or "",
+            "publies": int(d.get("publies") or 0),
+            "soucis": int(d.get("soucis") or 0)}
 
 
 def _boucle_publication():
@@ -2369,6 +2417,7 @@ def demarrer_minuteur():
     except Exception:
         return                              # un autre ouvrier s'en charge déjà
     _PUBLI_ETAT["actif"] = True
+    _etat_ecrire()
     threading.Thread(target=_boucle_publication, daemon=True).start()
 
 
@@ -2394,9 +2443,10 @@ def api_planification():
         finally:
             c.close()
         att.append({"espace": e["id"], "programmes": n, "en_retard": du})
-    return jsonify(actif=_PUBLI_ETAT["actif"], reglage=PUBLI_AUTO,
-                   dernier_tour=_PUBLI_ETAT["dernier_tour"],
-                   publies=_PUBLI_ETAT["publies"], soucis=_PUBLI_ETAT["soucis"],
+    et = _etat_lire()
+    return jsonify(actif=et["actif"], reglage=PUBLI_AUTO,
+                   dernier_tour=et["dernier_tour"],
+                   publies=et["publies"], soucis=et["soucis"],
                    grace_heures=PUBLI_GRACE_H, essais_max=PUBLI_ESSAIS,
                    espaces=att)
 
@@ -2413,8 +2463,8 @@ def sante():
     # l'installateur peut interroger au curl juste après le démarrage.
     # On n'y met AUCUN chiffre par client : seulement « ça tourne, oui ou non ».
     return jsonify(ok=True, posts=n, profil_complet=M.profil_complet(profil()),
-                   publication_auto=_PUBLI_ETAT["actif"],
-                   publication_dernier_tour=_PUBLI_ETAT["dernier_tour"])
+                   publication_auto=_etat_lire()["actif"],
+                   publication_dernier_tour=_etat_lire()["dernier_tour"])
 
 
 if __name__ == "__main__":
