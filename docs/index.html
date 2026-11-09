@@ -280,6 +280,12 @@ footer.fin p{font-size:.9rem; color:var(--muted); max-width:66ch}
 ::selection{background:var(--accent); color:#fff}
 :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+/* Les adresses et commandes citees DANS une phrase peuvent etre longues
+   (une URL de retour, un git clone). Sans cette regle elles poussent la
+   page entiere vers la droite : la barre de defilement horizontale
+   apparait, et sur telephone le texte sort de l'ecran. */
+:not(pre) > code { overflow-wrap: anywhere; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -575,15 +581,23 @@ copy config.exemple.json config.json
         disque durable — et c'est pourquoi on prend un VPS, une petite machine à vous.</p>
 
       <div class="encart piege" style="margin-bottom:24px">
-        <div class="t">⚠ Le fichier render.yaml est trompeur</div>
+        <div class="t">À propos du fichier render.yaml</div>
         <p><strong>Render</strong> est un hébergeur où l'on relie son dépôt GitHub : il construit
           et lance l'application tout seul, sans serveur à administrer. Le projet contient un
           <code>render.yaml</code> écrit pour lui, qui déclare un disque monté sur
           <code>/var/donnees</code> et une variable <code>PE_DONNEES</code>.</p>
-        <p style="margin-top:9px">Mais l'application ne tient pas compte de cette variable :
-          elle écrit toujours à côté de son code. Déployée sur Render telle quelle, elle
-          fonctionnerait… et <strong>perdrait toutes ses données à chaque mise en ligne</strong>.
-          Prenez un VPS, comme décrit dans la suite de cette partie.</p>
+        <p style="margin-top:9px"><strong>Cette variable est bien respectée par l'application.</strong>
+          Dans <code>app.py</code> : <code>DONNEES = os.environ.get("PE_DONNEES") or ICI</code>.
+          Si <code>PE_DONNEES</code> est renseignée, les bases, le registre des espaces et les
+          médias sont écrits là — donc sur le disque persistant, et rien n'est perdu à la mise
+          en ligne. Si elle est vide, tout est écrit à côté du code.</p>
+        <p style="margin-top:9px">Ce guide décrit malgré tout la voie <strong>VPS</strong> : c'est
+          celle qui a été installée et vérifiée de bout en bout, et c'est la seule où vous gardez
+          la main sur <code>ffmpeg</code>, les sauvegardes et la publication automatique.</p>
+        <p style="margin-top:9px"><strong>À retenir :</strong> si vous déplacez le dossier des
+          données, <em>pensez à la sauvegarde</em> — le script de la partie 04 sauvegarde
+          <code>/opt/posteveryday</code>. Avec <code>PE_DONNEES</code> ailleurs, c'est ce
+          dossier-là qu'il faut sauvegarder.</p>
       </div>
 
       <h3 style="font-size:1.05rem; margin-bottom:12px">Ce qu'il faut se procurer</h3>
@@ -637,13 +651,24 @@ copy config.exemple.json config.json
 <pre>ssh root@203.0.113.42          <span class="c"># votre IP</span>
 
 apt update &amp;&amp; apt upgrade -y
-apt install -y python3 python3-venv python3-pip git ufw
+apt install -y python3 python3-venv python3-pip git ufw ffmpeg
 
 <span class="c"># Le pare-feu : on n'ouvre que le strict nécessaire</span>
 ufw allow OpenSSH
 ufw allow 80
 ufw allow 443
 ufw --force enable</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Pourquoi <code>ffmpeg</code> est dans la liste</div>
+            <p>L'application l'appelle directement pour les fonctions vidéo (découpe,
+              conversion, miniatures) : dans <code>app.py</code>, la commande lancée commence par
+              <code>ffmpeg -y -i …</code>. Ce n'est <strong>pas</strong> un paquet Python : il
+              n'est donc pas dans <code>requirements.txt</code> et <code>pip</code> ne
+              l'installera jamais. Sans lui, tout le reste marche et la vidéo échoue, sans
+              explication claire.</p>
+            <p style="margin-top:9px">Pour vérifier qu'il est là :
+              <code>ffmpeg -version | head -1</code> doit répondre un numéro de version.</p>
           </div>
           <div class="encart">
             <div class="t">Pourquoi on n'ouvre pas le port 5010</div>
@@ -660,6 +685,32 @@ ufw --force enable</pre>
           <h3><span class="ref">03 · 3</span>Installer l'application sur le serveur</h3>
         </header>
         <div class="corps-e">
+          <div class="encart piege">
+            <div class="t">⚠ D'abord : votre dépôt est-il public ou privé ?</div>
+            <p><strong>Public</strong> — rien à préparer, passez au bloc suivant tel quel.</p>
+            <p style="margin-top:9px"><strong>Privé</strong> — la commande de clonage
+              <strong>échouera</strong> : le serveur n'a aucun droit sur votre dépôt. Il faut lui
+              donner une clé de lecture <em>avant</em>. C'est l'affaire de deux minutes, et c'est
+              une clé en <strong>lecture seule</strong> : même volée, elle ne permet pas de
+              modifier votre code.</p>
+          </div>
+          <div class="term">
+            <header><span class="ou">sur le serveur · dépôt privé seulement</span><button class="copier">Copier</button></header>
+<pre><span class="c"># 1 · On fabrique une cle pour CE serveur</span>
+ssh-keygen -t ed25519 -C "serveur post everyday" -f /root/.ssh/id_ed25519 -N ""
+
+<span class="c"># 2 · On affiche la cle PUBLIQUE (celle qui se partage)</span>
+cat /root/.ssh/id_ed25519.pub</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Où coller cette clé</div>
+            <p>Sur GitHub : votre dépôt → <strong>Settings</strong> → <strong>Deploy keys</strong>
+              → <strong>Add deploy key</strong>. Collez la ligne affichée, donnez-lui un nom
+              (« serveur »), et <strong>laissez « Allow write access » décoché</strong>.</p>
+            <p style="margin-top:9px">Ensuite, dans le bloc ci-dessous, remplacez la ligne
+              <code>git clone https://…</code> par :
+              <code>git clone git@github.com:VOTRE-COMPTE/mon-post-everyday.git posteveryday</code></p>
+          </div>
           <div class="term">
             <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
 <pre>mkdir -p /opt &amp;&amp; cd /opt
@@ -673,13 +724,53 @@ python3 -m venv venv
 <span class="c"># La configuration</span>
 cp config.exemple.json config.json
 
-<span class="c"># On refabrique ici le secret et le mot de passe : ce sont les mêmes</span>
-<span class="c"># commandes qu'en local, mais sur cette machine.</span>
+<span class="c"># Le secret de session, et le mot de passe de VOTRE compte.</span>
+<span class="c"># Ces deux commandes affichent chacune une longue ligne : gardez-les.</span>
 ./venv/bin/python -c "import secrets; print(secrets.token_hex(32))"
 ./venv/bin/python -c "from werkzeug.security import generate_password_hash as h; print(h('VotreMotDePasse'))"
 
 nano config.json               <span class="c"># y coller les deux résultats</span>
 chmod 600 config.json          <span class="c"># lisible par root seulement</span></pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ L'intelligence artificielle : enregistrer AVANT de tester</div>
+            <p>Le bloc <code>"llm"</code> de <code>config.json</code> (ou l'écran des réglages dans
+              l'application) porte le fournisseur, le modèle et la clé d'API qui écrivent vos
+              textes. Le bouton de test <strong>n'essaie pas ce que vous venez de taper</strong> :
+              il relit la configuration <strong>déjà enregistrée</strong>.</p>
+            <p style="margin-top:9px">L'ordre est donc toujours le même : <strong>remplir,
+              enregistrer, puis tester.</strong> Tester avant d'enregistrer donne le résultat de
+              l'ancienne clé — on croit que la nouvelle est mauvaise alors qu'elle n'a jamais été
+              essayée. Pensez aussi à <code>"actif": true</code>, sinon l'application se rabat sur
+              ses textes tout faits sans rien dire.</p>
+          </div>
+          <div class="encart">
+            <div class="t">Ce qu'il faut écrire dans config.json</div>
+            <p>Deux endroits, et deux seulement, pour ouvrir l'application :</p>
+            <ul>
+              <li><code>"secret"</code> — collez-y le résultat de la <strong>première</strong>
+                commande. Il signe les sessions : s'il reste vide, personne ne peut se connecter.</li>
+              <li><code>"comptes"</code> — c'est <strong>votre</strong> compte. Effacez les lignes
+                d'exemple vides et laissez-en une seule, remplie.</li>
+            </ul>
+            <p style="margin-top:9px">La liste doit ressembler exactement à ceci, avec le résultat
+              de la <strong>seconde</strong> commande dans <code>mdp_hash</code> :</p>
+            <div class="term">
+              <header><span class="ou">config.json</span></header>
+<pre>"comptes": [
+  {
+    "identifiant": "mon-prenom",
+    "nom": "Mon Prénom",
+    "role": "admin",
+    "mdp_hash": "scrypt:32768:8:1$…la longue ligne collée ici…"
+  }
+],
+"secret": "…la premiere longue ligne ici…"</pre>
+            </div>
+            <p style="margin-top:9px"><code>identifiant</code> est ce que vous taperez pour vous
+              connecter, <code>role</code> vaut <code>admin</code> pour avoir accès à tout.
+              ⚠️ Ne collez <strong>jamais</strong> votre mot de passe en clair : seul le
+              <code>mdp_hash</code> doit figurer dans le fichier.</p>
           </div>
           <div class="encart">
             <div class="t">nano, en trois touches</div>
@@ -742,10 +833,74 @@ systemctl status posteveryday --no-pager</pre>
         </div>
       </div>
 
+      <div class="etape" data-id="p3pub">
+        <header>
+          <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+          <h3><span class="ref">03 · 5</span>Vérifier la publication automatique</h3>
+        </header>
+        <div class="corps-e">
+          <p>Quand vous posez un post sur une date dans le calendrier, il part <strong>tout
+            seul</strong> à l'heure dite. Il n'y a <strong>rien à installer</strong> : le minuteur
+            vit dans l'application et démarre avec elle. Cette étape sert à le vérifier, et à
+            savoir quoi regarder le jour où un post ne part pas.</p>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>curl -s http://127.0.0.1:5010/api/sante</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Ce que la réponse veut dire</div>
+            <ul>
+              <li><code>publication_auto: true</code> — le minuteur tourne.
+                <strong>C'est la ligne à regarder.</strong> S'il est à <code>false</code>, rien
+                ne partira tout seul.</li>
+              <li><code>publication_dernier_tour</code> — l'heure du dernier passage. Elle doit
+                avoir moins d'une minute : le minuteur passe toutes les 60 secondes.</li>
+            </ul>
+            <p style="margin-top:9px">Pour le détail — combien de posts sont programmés et
+              combien auraient déjà dû partir, client par client — ouvrez
+              <code>/api/planification</code> dans votre navigateur <strong>une fois
+              connecté</strong> à l'application. Cette adresse-là demande une session : au
+              <code>curl</code>, elle répond <code>401</code>, et c'est normal.</p>
+            <ul style="display:none">
+            </ul>
+          </div>
+          <div class="encart">
+            <div class="t">Les trois sécurités, et pourquoi elles existent</div>
+            <ul>
+              <li><strong>Un seul processus publie.</strong> Si votre serveur lance plusieurs
+                ouvriers, un verrou de fichier désigne celui qui s'en charge. Sans lui, le même
+                post partirait deux ou trois fois sur le réseau.</li>
+              <li><strong>Un post en retard de plus de 24 h ne part pas.</strong> Serveur éteint
+                une semaine ? On ne déverse pas dix publications d'un coup : le post redevient
+                brouillon et affiche « échéance dépassée — à reprogrammer ». C'est vous qui
+                décidez.</li>
+              <li><strong>Trois tentatives, puis on arrête.</strong> Un réseau en panne ou un
+                compte non connecté ne doit pas être sollicité toutes les minutes sans fin. Après
+                trois échecs le post sort du calendrier, et le message d'erreur du réseau reste
+                sur la fiche pour que vous sachiez quoi corriger.</li>
+            </ul>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Un post programmé ne part que si son réseau est connecté</div>
+            <p>C'est l'erreur la plus fréquente : le calendrier est rempli, mais aucun compte n'a
+              été lié dans « Connexions ». Le post échoue trois fois, puis redevient brouillon
+              avec le message <em>« … n'est pas connecté »</em>. Faites la partie 05 avant de
+              programmer quoi que ce soit.</p>
+          </div>
+          <div class="encart">
+            <div class="t">Si vous voulez l'éteindre</div>
+            <p>Ajoutez <code>Environment=PE_PUBLI_AUTO=0</code> dans le service systemd, puis
+              <code>systemctl daemon-reload &amp;&amp; systemctl restart posteveryday</code>.
+              Les dates restent enregistrées, rien n'est perdu : plus rien ne part tout seul, et
+              vous publiez à la main depuis l'application.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="etape" data-id="p3e">
         <header>
           <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-          <h3><span class="ref">03 · 5</span>Le domaine et le HTTPS, avec Caddy</h3>
+          <h3><span class="ref">03 · 6</span>Le domaine et le HTTPS, avec Caddy</h3>
         </header>
         <div class="corps-e">
           <p>Caddy obtient et renouvelle le certificat Let's Encrypt tout seul. Sa configuration
@@ -780,7 +935,7 @@ systemctl reload caddy</pre>
       <div class="etape" data-id="p3g">
         <header>
           <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-          <h3><span class="ref">03 · 6</span>Mettre votre nom à la place des trous</h3>
+          <h3><span class="ref">03 · 7</span>Mettre votre nom à la place des trous</h3>
         </header>
         <div class="corps-e">
           <p>Le projet vous a été livré <strong>sans identité</strong> : ni société, ni adresse de
@@ -801,6 +956,14 @@ sed -i 's/votre-domaine.fr/planning.mondomaine.fr/g; \
         s/VOTRE SOCIÉTÉ/Ma Société SARL/g' \
     conditions.html confidentialite.html _legal_base.html guide.html tuto.html
 
+<span class="c"># ⚠ INDISPENSABLE : on enregistre la modification dans git.</span>
+<span class="c"># Ces 5 fichiers sont suivis par git. Sans ce commit, le « git pull »</span>
+<span class="c"># de la partie 04 REFUSERA de se faire, pour ne pas ecraser votre nom.</span>
+git config user.email "vous@mondomaine.fr"
+git config user.name "Mon installation"
+git add conditions.html confidentialite.html _legal_base.html guide.html tuto.html
+git commit -m "Mon identite"
+
 systemctl restart posteveryday</pre>
           </div>
           <div class="encart piege">
@@ -816,7 +979,7 @@ systemctl restart posteveryday</pre>
       <div class="etape" data-id="p3f">
         <header>
           <button class="coche" aria-label="Marquer comme fait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-          <h3><span class="ref">03 · 7</span>Brancher les réseaux sociaux (plus tard)</h3>
+          <h3><span class="ref">03 · 8</span>Brancher les réseaux sociaux (plus tard)</h3>
         </header>
         <div class="corps-e">
           <p>L'application fonctionne entièrement sans cette étape : rédaction, agenda, carrousels,
@@ -827,10 +990,32 @@ systemctl restart posteveryday</pre>
             identifiants dans l'écran <em>Connexions</em>. <strong>Toute la marche à suivre est en
             <a href="#p5">partie 05</a></strong> — à traiter une fois que le reste tourne.</p>
           <div class="encart piege">
-            <div class="t">⚠ L'adresse de retour doit correspondre</div>
-            <p>Dans chaque application éditeur, l'URL de redirection doit être exactement celle de
-              votre domaine — la même que <code>PE_BASE</code>. Une erreur ici, et la connexion
-              échoue sans message clair.</p>
+            <div class="t">⚠ Les adresses de retour, à recopier telles quelles</div>
+            <p>Chaque plateforme vous demandera une « URL de redirection » (<em>redirect URI</em>,
+              <em>callback URL</em>). Ce n'est pas l'adresse de votre site : c'est une adresse
+              <strong>précise</strong>, et la moindre différence fait échouer la connexion
+              <strong>sans message clair</strong>. Remplacez <code>votre-domaine.fr</code> par le
+              vôtre — le même que <code>PE_BASE</code> — et gardez tout le reste à l'identique,
+              <code>https</code> compris, sans barre oblique à la fin.</p>
+          </div>
+          <div class="term">
+            <header><span class="ou">à coller chez chaque plateforme</span><button class="copier">Copier</button></header>
+<pre>YouTube    https://votre-domaine.fr/api/reseaux/youtube/retour
+Facebook   https://votre-domaine.fr/api/reseaux/facebook/retour
+Instagram  https://votre-domaine.fr/api/reseaux/instagram/retour
+LinkedIn   https://votre-domaine.fr/api/reseaux/linkedin/retour
+TikTok     https://votre-domaine.fr/api/reseaux/tiktok/retour
+
+<span class="c"># En plus, seulement si vous publiez sur une PAGE LinkedIn</span>
+<span class="c"># (produit « Community Management », distinct du precedent)</span>
+LinkedIn   https://votre-domaine.fr/api/linkedin-page/retour</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Comment vérifier que c'est la bonne</div>
+            <p>Ouvrez l'adresse dans votre navigateur. Elle doit répondre quelque chose — une
+              erreur de l'application, un message — mais <strong>jamais « page introuvable »</strong>.
+              Un 404 signifie que votre domaine ou votre <code>PE_BASE</code> ne correspond pas, et
+              aucune connexion ne marchera.</p>
           </div>
         </div>
       </div>
@@ -855,6 +1040,35 @@ systemctl restart posteveryday</pre>
 git pull
 ./venv/bin/pip install -r requirements.txt   <span class="c"># si les dépendances ont bougé</span>
 systemctl restart posteveryday</pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Si <code>git pull</code> refuse de se faire</div>
+            <p>Vous verrez <em>« Your local changes would be overwritten »</em>. C'est que des
+              fichiers ont été modifiés sur le serveur <strong>sans être enregistrés dans
+              git</strong> — presque toujours les pages à votre nom de l'étape 03 · 7. Git protège
+              votre travail : il préfère s'arrêter plutôt que l'effacer.</p>
+            <p style="margin-top:9px">La réponse est toujours la même : <strong>enregistrez,
+              puis tirez.</strong></p>
+          </div>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre>cd /opt/posteveryday
+git add -A &amp;&amp; git commit -m "Reglages du serveur"
+git pull --rebase</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Et si git annonce un conflit</div>
+            <p>Cela arrive quand la mise à jour touche <em>la même ligne</em> qu'une de vos
+              modifications — en pratique, une page légale. Le plus simple et le plus sûr :
+              reprendre la version du projet, puis rejouer votre <code>sed</code> de
+              l'étape 03 · 7.</p>
+            <p style="margin-top:9px"><code>git checkout --theirs</code> suivi du fichier
+              concerné, puis <code>git add</code> ce fichier, puis
+              <code>git rebase --continue</code>. Relancez ensuite le <code>sed</code> et refaites
+              un <code>git commit</code>.</p>
+            <p style="margin-top:9px"><strong>Rien n'est jamais perdu :</strong> vos données —
+              bases <code>.db</code>, dossier <code>medias/</code>, <code>config.json</code> — ne
+              sont pas dans git et ne sont jamais touchées par ces manœuvres.</p>
           </div>
           <div class="encart">
             <div class="t">Pourquoi config.json ne pose pas de problème</div>
@@ -881,11 +1095,30 @@ systemctl restart posteveryday</pre>
 cat &gt; /opt/sauvegarder.sh &lt;&lt;'FIN'
 #!/bin/bash
 # Les donnees de Post Everyday : bases, medias, configuration.
-cd /opt/posteveryday || exit 1
+# DONNEES : le dossier ou l'application ecrit. Si vous avez renseigne
+# PE_DONNEES, mettez la meme valeur ici, sinon vous sauvegardez un dossier vide.
+DONNEES=/opt/posteveryday
+cd "$DONNEES" || { echo "dossier introuvable : $DONNEES" &gt;&amp;2; exit 1; }
+mkdir -p /opt/sauvegardes
 H=$(date +%Y%m%d-%H%M)
-tar czf "/opt/sauvegardes/pe-$H.tgz" \
-    --exclude='venv' --exclude='__pycache__' \
-    config.json espaces.json medias/ *.db 2>/dev/null
+A="/opt/sauvegardes/pe-$H.tgz"
+
+# Pas de 2&gt;/dev/null ici : une sauvegarde qui echoue en silence est PIRE
+# que pas de sauvegarde du tout — on croit etre couvert et on ne l'est pas.
+tar czf "$A" --exclude='venv' --exclude='__pycache__' \
+    config.json espaces.json medias/ *.db
+if [ $? -ne 0 ] || [ ! -s "$A" ]; then
+    echo "SAUVEGARDE ECHOUEE : $A" &gt;&amp;2
+    exit 1
+fi
+
+# On relit l'archive : une archive illisible ne sauve personne.
+if ! tar tzf "$A" &gt;/dev/null 2&gt;&amp;1; then
+    echo "ARCHIVE ILLISIBLE : $A" &gt;&amp;2
+    exit 1
+fi
+echo "sauvegarde OK : $A ($(du -h "$A" | cut -f1))"
+
 # On garde 14 jours, pas plus : le disque n'est pas extensible.
 find /opt/sauvegardes -name 'pe-*.tgz' -mtime +14 -delete
 FIN
@@ -895,6 +1128,40 @@ chmod +x /opt/sauvegarder.sh
 
 <span class="c"># Tous les jours à 3 h du matin</span>
 (crontab -l 2&gt;/dev/null; echo "0 3 * * * /opt/sauvegarder.sh") | crontab -</pre>
+          </div>
+          <div class="encart piege">
+            <div class="t">⚠ Une sauvegarde qu'on n'a jamais restaurée n'est pas une sauvegarde</div>
+            <p>Tant que vous n'avez pas remis une archive en place une fois, vous ne savez pas si
+              elle contient ce qu'il faut. Faites-le <strong>maintenant</strong>, pas le jour où
+              vous en aurez besoin. On restaure <em>à côté</em>, jamais par-dessus les données
+              vivantes :</p>
+          </div>
+          <div class="term">
+            <header><span class="ou">sur le serveur</span><button class="copier">Copier</button></header>
+<pre><span class="c"># 1 · Ce que contient la derniere archive</span>
+A=$(ls -t /opt/sauvegardes/pe-*.tgz | head -1); echo "$A"
+tar tzf "$A"
+
+<span class="c"># 2 · On la deballe DANS UN COIN, pas sur l'application</span>
+rm -rf /tmp/essai-restauration &amp;&amp; mkdir -p /tmp/essai-restauration
+tar xzf "$A" -C /tmp/essai-restauration
+
+<span class="c"># 3 · On verifie que les bases sont lisibles et non vides</span>
+for b in /tmp/essai-restauration/*.db; do
+    echo -n "$b : "
+    sqlite3 "$b" "SELECT COUNT(*) || ' posts' FROM posts;" 2&gt;/dev/null || echo "ILLISIBLE"
+done
+ls -l /tmp/essai-restauration/config.json /tmp/essai-restauration/espaces.json</pre>
+          </div>
+          <div class="encart">
+            <div class="t">Ce que vous devez voir</div>
+            <p>Un nombre de posts pour chaque base, et les deux fichiers présents. Si une base
+              répond <code>ILLISIBLE</code> ou si <code>config.json</code> manque, la sauvegarde
+              ne vous servira à rien : reprenez le script ci-dessus avant d'aller plus loin.</p>
+            <p style="margin-top:9px">Pour restaurer pour de vrai : arrêtez le service
+              (<code>systemctl stop posteveryday</code>), copiez les fichiers depuis
+              <code>/tmp/essai-restauration</code> vers le dossier des données, puis redémarrez.
+              <code>sqlite3</code> s'installe avec <code>apt install -y sqlite3</code>.</p>
           </div>
           <div class="encart piege">
             <div class="t">⚠ Une sauvegarde sur la même machine n'est pas une sauvegarde</div>

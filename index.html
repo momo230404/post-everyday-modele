@@ -2464,13 +2464,62 @@ function ouvrirProfil(){
   f += '<div class="rangee"><button class="btn p" onclick="sauverProfil()">Enregistrer</button>' +
        '<span id="msgProfil" style="font-size:12px;color:var(--vert)"></span></div>';
   panneau('MB', 'Mon métier', 'La base de tout ce qui sera écrit', '#ffc447', '#a86bff', f);
+  brancherBrouillon();
 }
+
+/* ---------- le brouillon du paramétrage ----------
+   ⚠️ Avant, ce formulaire ne gardait RIEN tant qu'on n'avait pas cliqué sur
+   « Enregistrer ». Une fausse manipulation, un retour en arrière, et tout
+   était à retaper. Maintenant chaque frappe est gardée dans le navigateur. */
+function cleBrouillon(){
+  var esp = (document.cookie.match(/(?:^|;\s*)pe_espace=([^;]*)/) || [])[1] || 'defaut';
+  return 'pe_brouillon_profil_' + esp;
+}
+function lireBrouillon(){
+  try { return JSON.parse(localStorage.getItem(cleBrouillon()) || 'null'); }
+  catch (e) { return null; }
+}
+function ecrireBrouillon(d){
+  try { localStorage.setItem(cleBrouillon(), JSON.stringify(d)); } catch (e) {}
+}
+function effacerBrouillon(){
+  try { localStorage.removeItem(cleBrouillon()); } catch (e) {}
+}
+function brancherBrouillon(){
+  var b = lireBrouillon(), repris = false;
+  CHAMPS.forEach(function(c){
+    var el = $('#c_' + c.cle);
+    if (!el) return;
+    // On ne repose le brouillon que s'il dit autre chose que le serveur :
+    // sinon on écraserait un enregistrement récent par du vieux texte.
+    if (b && typeof b[c.cle] === 'string' && b[c.cle] !== (PROFIL[c.cle] || '')) {
+      el.value = b[c.cle]; repris = true;
+    }
+    el.addEventListener('input', function(){
+      var d = {};
+      CHAMPS.forEach(function(x){ var e = $('#c_' + x.cle); if (e) d[x.cle] = e.value; });
+      ecrireBrouillon(d);
+      var m = $('#msgProfil');
+      if (m) { m.style.color = 'var(--gris, #888)'; m.textContent = 'Brouillon gardé — pensez à enregistrer'; }
+    });
+  });
+  if (repris) {
+    var m = $('#msgProfil');
+    if (m) {
+      m.style.color = '#c87f00';
+      m.textContent = 'Brouillon retrouvé : vérifiez, puis enregistrez.';
+    }
+  }
+}
+
 async function sauverProfil(){
   const d = {};
   CHAMPS.forEach(c => { const el = $('#c_'+c.cle); if (el) d[c.cle] = el.value; });
   const r = await API('/api/profil', {method:'POST', headers:{'Content-Type':'application/json'},
                                       body: JSON.stringify(d)});
   PROFIL = r.profil; PROFIL_OK = r.complet;
+  effacerBrouillon();          // le serveur a la version finale : plus de brouillon
+  $('#msgProfil').style.color = 'var(--vert)';
   $('#msgProfil').textContent = r.complet ? 'Enregistré. Les agents sont prêts.'
                                           : 'Enregistré, mais il manque des champs obligatoires.';
   charger();

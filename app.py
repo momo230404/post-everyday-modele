@@ -243,14 +243,35 @@ def espace_courant():
     return liste[0]
 
 
-def db():
-    chemin = os.path.join(DONNEES, espace_courant()["fichier"])
+def db_espace(e):
+    """La base d'un espace donné. ⚠️ Le minuteur de publication tourne HORS
+    d'une requête HTTP : `espace_courant()` y retomberait toujours sur le
+    premier compte, et on publierait chez le mauvais client."""
+    chemin = os.path.join(DONNEES, e["fichier"])
     neuf = not os.path.exists(chemin)
     c = sqlite3.connect(chemin, timeout=20)
     c.row_factory = sqlite3.Row
     if neuf:
         creer_tables(c)
+    else:
+        _migrer(c)
     return c
+
+
+def _migrer(c):
+    """Les colonnes ajoutées après coup. Sans ça, une base déjà en service
+    casse à la première publication automatique."""
+    try:
+        cols = [r[1] for r in c.execute("PRAGMA table_info(posts)")]
+        if "tentatives" not in cols:
+            c.execute("ALTER TABLE posts ADD COLUMN tentatives INTEGER DEFAULT 0")
+            c.commit()
+    except Exception:
+        pass
+
+
+def db():
+    return db_espace(espace_courant())
 
 
 def creer_tables(c):
@@ -1410,23 +1431,28 @@ def api_delier(pid):
     return jsonify(ok=True)
 
 
-@app.route("/api/publier/<int:pid>", methods=["POST"])
-def api_publier(pid):
-    """Publication réelle. Sans compte lié, on refuse clairement."""
-    with db() as c:
+def publier_post(pid, espace=None):
+    """Publie vraiment un post. Rend (url, souci, code_http).
+
+    Extrait de la route pour que le minuteur passe par EXACTEMENT le même
+    chemin : une publication programmée ne doit pas suivre un autre code que
+    celle qu'on déclenche à la main, sinon les deux divergent avec le temps.
+    """
+    ouvrir = (lambda: db_espace(espace)) if espace else db
+    with ouvrir() as c:
         post = c.execute("SELECT * FROM posts WHERE id=?", (pid,)).fetchone()
         if not post:
-            return jsonify(erreur="post introuvable"), 404
+            return "", "post introuvable", 404
         compte = c.execute("SELECT * FROM comptes WHERE plateforme=?",
                            (post["reseau"],)).fetchone()
     if not compte:
-        return jsonify(erreur="%s n'est pas connecté. Va dans « Connexions » pour lier le compte."
-                       % M.RESEAUX[post["reseau"]]["nom"]), 409
+        return "", ("%s n'est pas connecté. Va dans « Connexions » pour lier le compte."
+                    % M.RESEAUX[post["reseau"]]["nom"]), 409
 
     reseau = post["reseau"]
     depot = depots.DEPOTS.get(reseau)
     if not depot:
-        return jsonify(erreur="Plateforme inconnue : %s" % reseau), 400
+        return "", "Plateforme inconnue : %s" % reseau, 400
 
     # Le média sur le disque, et son adresse publique — Instagram et Facebook
     # vont chercher le fichier eux-mêmes, ils ne savent pas lire notre disque.
@@ -1443,16 +1469,22 @@ def api_publier(pid):
     except Exception as e:                       # un réseau qui change son API
         url, souci = "", "erreur inattendue : %s" % str(e)[:200]
 
-    with db() as c:
+    with ouvrir() as c:
         if url:
             c.execute("UPDATE posts SET etat='publie', publie_le=?, url_publie=?, erreur='' "
                       "WHERE id=?", (datetime.now().isoformat(timespec="seconds"), url, pid))
         else:
             c.execute("UPDATE posts SET erreur=? WHERE id=?", (souci, pid))
+    return url, souci, (200 if url else 502)
 
+
+@app.route("/api/publier/<int:pid>", methods=["POST"])
+def api_publier(pid):
+    """Publication réelle, déclenchée à la main. Sans compte lié, on refuse."""
+    url, souci, code = publier_post(pid)
     if url:
-        return jsonify(ok=True, url=url, reseau=reseau)
-    return jsonify(erreur=souci, reseau=reseau), 502
+        return jsonify(ok=True, url=url)
+    return jsonify(erreur=souci), code
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2230,11 +2262,159 @@ def api_agenda_caler():
     return jsonify(ok=True, etat="prevu", prevu_le=quand)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# La publication à l'heure dite
+# ─────────────────────────────────────────────────────────────────────────────
+# ⚠️ Cette fonction MANQUAIT : l'agenda enregistrait une date et rien ne la
+# déclenchait. Un minuteur dans l'application, plutôt qu'un cron système : les
+# élèves n'ont pas à installer ni à régler quoi que ce soit.
+import threading
+
+PUBLI_AUTO = (os.environ.get("PE_PUBLI_AUTO", "1").strip().lower()
+              not in ("0", "non", "off", "false"))
+PUBLI_GRACE_H = 24      # au-delà, on ne publie plus tout seul
+PUBLI_ESSAIS = 3        # un réseau en panne ne doit pas être harcelé
+_PUBLI_ETAT = {"actif": False, "dernier_tour": "", "publies": 0, "soucis": 0}
+
+
+def _tour_de_publication():
+    """Un passage : tout ce qui est dû, dans TOUS les espaces, est publié."""
+    maintenant_ = datetime.now()
+    nowi = maintenant_.isoformat(timespec="seconds")
+    limite = (maintenant_ - timedelta(hours=PUBLI_GRACE_H)).isoformat(timespec="seconds")
+    for e in espaces():
+        try:
+            c = db_espace(e)
+        except Exception:
+            continue
+        try:
+            dus = c.execute(
+                "SELECT id, prevu_le, COALESCE(tentatives,0) AS t FROM posts "
+                "WHERE etat='prevu' AND prevu_le IS NOT NULL AND prevu_le<>'' "
+                "AND prevu_le<=? ORDER BY prevu_le", (nowi,)).fetchall()
+        except Exception:
+            dus = []
+        finally:
+            c.close()
+        for r in dus:
+            pid = r["id"]
+            # ⚠️ Serveur arrêté une semaine : on ne réveille pas le client avec
+            # dix publications d'un coup. Passé le délai de grâce, le post
+            # redevient un brouillon et DIT pourquoi.
+            if r["prevu_le"] < limite:
+                _marquer(e, pid, "brouillon",
+                         "échéance dépassée de plus de %d h — à reprogrammer" % PUBLI_GRACE_H)
+                continue
+            if r["t"] >= PUBLI_ESSAIS:
+                _marquer(e, pid, "brouillon", None)   # on garde l'erreur du réseau
+                continue
+            try:
+                url, souci, _ = publier_post(pid, e)
+            except Exception as ex:
+                url, souci = "", "erreur inattendue : %s" % str(ex)[:200]
+            if url:
+                _PUBLI_ETAT["publies"] += 1
+                continue
+            _PUBLI_ETAT["soucis"] += 1
+            # ⚠️ C'est ICI qu'on compte, pas dans publier_post : certains
+            # refus (réseau non connecté, plateforme inconnue) sortent avant
+            # d'avoir touché la base. Sans ça, le post était réessayé
+            # indéfiniment, en silence.
+            cc = db_espace(e)
+            try:
+                with cc:
+                    cc.execute("UPDATE posts SET erreur=?, "
+                               "tentatives=COALESCE(tentatives,0)+1 WHERE id=?",
+                               (souci, pid))
+            except Exception:
+                pass
+            finally:
+                cc.close()
+    _PUBLI_ETAT["dernier_tour"] = nowi
+
+
+def _marquer(e, pid, etat, souci):
+    c = db_espace(e)
+    try:
+        with c:
+            if souci is None:
+                c.execute("UPDATE posts SET etat=? WHERE id=?", (etat, pid))
+            else:
+                c.execute("UPDATE posts SET etat=?, erreur=? WHERE id=?", (etat, souci, pid))
+    except Exception:
+        pass
+    finally:
+        c.close()
+
+
+def _boucle_publication():
+    while True:
+        try:
+            _tour_de_publication()
+        except Exception:
+            pass
+        time.sleep(60)
+
+
+def demarrer_minuteur():
+    """⚠️ Un seul ouvrier doit publier. Avec plusieurs processus gunicorn,
+    sans ce verrou, le même post partirait deux ou trois fois."""
+    if not PUBLI_AUTO:
+        return
+    try:
+        import fcntl
+        f = open(os.path.join(DONNEES, ".publication.lock"), "w")
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        globals()["_VERROU_PUBLI"] = f      # gardé ouvert : il tient le verrou
+    except Exception:
+        return                              # un autre ouvrier s'en charge déjà
+    _PUBLI_ETAT["actif"] = True
+    threading.Thread(target=_boucle_publication, daemon=True).start()
+
+
+@app.route("/api/planification")
+def api_planification():
+    """De quoi vérifier que la publication automatique tourne — c'est ce que
+    l'installateur doit pouvoir contrôler sans lire le code."""
+    now = datetime.now().isoformat(timespec="seconds")
+    att = []
+    for e in espaces():
+        try:
+            c = db_espace(e)
+        except Exception:
+            continue
+        try:
+            n = c.execute("SELECT COUNT(*) n FROM posts WHERE etat='prevu' "
+                          "AND prevu_le IS NOT NULL AND prevu_le<>''").fetchone()["n"]
+            du = c.execute("SELECT COUNT(*) n FROM posts WHERE etat='prevu' "
+                           "AND prevu_le IS NOT NULL AND prevu_le<>'' AND prevu_le<=?",
+                           (now,)).fetchone()["n"]
+        except Exception:
+            n, du = 0, 0
+        finally:
+            c.close()
+        att.append({"espace": e["id"], "programmes": n, "en_retard": du})
+    return jsonify(actif=_PUBLI_ETAT["actif"], reglage=PUBLI_AUTO,
+                   dernier_tour=_PUBLI_ETAT["dernier_tour"],
+                   publies=_PUBLI_ETAT["publies"], soucis=_PUBLI_ETAT["soucis"],
+                   grace_heures=PUBLI_GRACE_H, essais_max=PUBLI_ESSAIS,
+                   espaces=att)
+
+
+demarrer_minuteur()
+
+
 @app.route("/api/sante")
 def sante():
     with db() as c:
         n = c.execute("SELECT COUNT(*) n FROM posts").fetchone()["n"]
-    return jsonify(ok=True, posts=n, profil_complet=M.profil_complet(profil()))
+    # ⚠️ L'état du minuteur est ICI, et pas seulement dans /api/planification :
+    # cette page-ci est ouverte sans session, c'est donc la seule que
+    # l'installateur peut interroger au curl juste après le démarrage.
+    # On n'y met AUCUN chiffre par client : seulement « ça tourne, oui ou non ».
+    return jsonify(ok=True, posts=n, profil_complet=M.profil_complet(profil()),
+                   publication_auto=_PUBLI_ETAT["actif"],
+                   publication_dernier_tour=_PUBLI_ETAT["dernier_tour"])
 
 
 if __name__ == "__main__":
